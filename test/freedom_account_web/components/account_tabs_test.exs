@@ -6,51 +6,56 @@ defmodule FreedomAccountWeb.AccountTabsTest do
 
   describe "switching tabs" do
     test "only funds tab is active on fund list page", %{conn: conn} do
-      conn
+      :phoenix
+      |> start_session(conn: conn)
       |> visit(~p"/funds")
-      |> assert_has(active_tab(), text: "Funds")
-      |> assert_has(inactive_tab(), text: "Loans")
-      |> assert_has(inactive_tab(), text: "Transactions")
+      |> expect(active_tab() |> by_css() |> filter(has_text: html_text("Funds")) |> visible())
+      |> expect(inactive_tab() |> by_css() |> filter(has_text: html_text("Loans")) |> visible())
+      |> expect(inactive_tab() |> by_css() |> filter(has_text: html_text("Transactions")) |> visible())
     end
 
     test "only loans tab is active on loan list page", %{conn: conn} do
-      conn
+      :phoenix
+      |> start_session(conn: conn)
       |> visit(~p"/loans")
-      |> assert_has(active_tab(), text: "Loans")
-      |> assert_has(inactive_tab(), text: "Funds")
-      |> assert_has(inactive_tab(), text: "Transactions")
+      |> expect(active_tab() |> by_css() |> filter(has_text: html_text("Loans")) |> visible())
+      |> expect(inactive_tab() |> by_css() |> filter(has_text: html_text("Funds")) |> visible())
+      |> expect(inactive_tab() |> by_css() |> filter(has_text: html_text("Transactions")) |> visible())
     end
 
     test "only transactions tab is active on transaction list page", %{conn: conn} do
-      conn
+      :phoenix
+      |> start_session(conn: conn)
       |> visit(~p"/transactions")
-      |> assert_has(active_tab(), text: "Transactions")
-      |> assert_has(inactive_tab(), text: "Funds")
-      |> assert_has(inactive_tab(), text: "Loans")
+      |> expect(active_tab() |> by_css() |> filter(has_text: html_text("Transactions")) |> visible())
+      |> expect(inactive_tab() |> by_css() |> filter(has_text: html_text("Funds")) |> visible())
+      |> expect(inactive_tab() |> by_css() |> filter(has_text: html_text("Loans")) |> visible())
     end
 
     test "shows balances on funds and loans tabs", %{conn: conn} do
-      conn
+      :phoenix
+      |> start_session(conn: conn)
       |> visit(~p"/")
-      |> assert_has(active_tab(), text: "$0.00")
-      |> assert_has(inactive_tab(), text: "$0.00")
+      |> expect(active_tab() |> by_css() |> filter(has_text: html_text("$0.00")) |> visible())
+      |> expect(inactive_tab() |> by_css() |> filter(has_text: html_text("$0.00")) |> visible())
     end
 
     test "can switch tabs", %{conn: conn} do
-      conn
+      :phoenix
+      |> start_session(conn: conn)
       |> visit(~p"/funds")
-      |> click_link("Loans")
-      |> assert_has(active_tab(), text: "Loans")
-      |> assert_has(inactive_tab(), text: "Funds")
-      |> assert_has(inactive_tab(), text: "Transactions")
-      |> click_link("Transactions")
-      |> assert_has(active_tab(), text: "Transactions")
-      |> assert_has(inactive_tab(), text: "Funds")
-      |> assert_has(inactive_tab(), text: "Loans")
-      |> click_link("Funds")
-      |> assert_has(active_tab(), text: "Funds")
-      |> assert_has(inactive_tab(), text: "Loans")
-      |> assert_has(inactive_tab(), text: "Transactions")
+      |> click(by_role(:tab, name: "Loans"))
+      |> expect(active_tab() |> by_css() |> filter(has_text: html_text("Loans")) |> visible())
+      |> expect(inactive_tab() |> by_css() |> filter(has_text: html_text("Funds")) |> visible())
+      |> expect(inactive_tab() |> by_css() |> filter(has_text: html_text("Transactions")) |> visible())
+      |> click(by_role(:tab, name: "Transactions"))
+      |> expect(active_tab() |> by_css() |> filter(has_text: html_text("Transactions")) |> visible())
+      |> expect(inactive_tab() |> by_css() |> filter(has_text: html_text("Funds")) |> visible())
+      |> expect(inactive_tab() |> by_css() |> filter(has_text: html_text("Loans")) |> visible())
+      |> click(by_role(:tab, name: "Funds"))
+      |> expect(active_tab() |> by_css() |> filter(has_text: html_text("Funds")) |> visible())
+      |> expect(inactive_tab() |> by_css() |> filter(has_text: html_text("Loans")) |> visible())
+      |> expect(inactive_tab() |> by_css() |> filter(has_text: html_text("Transactions")) |> visible())
     end
   end
 end

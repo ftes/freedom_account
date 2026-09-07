@@ -3,54 +3,57 @@ defmodule FreedomAccountWeb.LoanLive.ShowTest do
 
   use FreedomAccountWeb.ConnCase, async: true
 
-  alias Phoenix.HTML.Safe
-
   describe "viewing an individual loan" do
     setup [:create_account, :create_loan]
 
     test "drills down to individual loan and back", %{conn: conn, loan: loan} do
-      conn
+      :phoenix
+      |> start_session(conn: conn)
       |> visit(~p"/loans")
-      |> click_link(loan_card(loan), loan.name)
-      |> assert_has(page_title(), text: Safe.to_iodata(loan))
-      |> assert_has(heading(), text: loan)
-      |> assert_has(heading(), text: "$0.00")
-      |> click_link("Back to Loans")
-      |> assert_has(page_title(), text: "Loans")
-      |> assert_has(active_tab(), text: "Loans")
+      |> click(loan |> loan_card() |> by_css() |> filter(has_text: html_text(loan.name)))
+      |> expect(page_title_contains(loan))
+      |> expect(heading() |> by_css() |> filter(has_text: html_text(loan)) |> visible())
+      |> expect(heading() |> by_css() |> filter(has_text: html_text("$0.00")) |> visible())
+      |> click(by_role(:link, name: "Back to Loans"))
+      |> expect(page_title_contains("Loans"))
+      |> expect(active_tab() |> by_css() |> filter(has_text: html_text("Loans")) |> visible())
     end
 
     test "displays loan", %{conn: conn, loan: loan} do
-      conn
+      :phoenix
+      |> start_session(conn: conn)
       |> visit(~p"/loans/#{loan}")
-      |> assert_has(heading(), text: loan)
+      |> expect(heading() |> by_css() |> filter(has_text: html_text(loan)) |> visible())
     end
 
     test "allows editing loan", %{conn: conn, loan: loan} do
-      conn
+      :phoenix
+      |> start_session(conn: conn)
       |> visit(~p"/loans/#{loan}")
-      |> click_link("Edit Details")
-      |> assert_path(~p"/loans/#{loan}/edit")
-      |> click_link("Cancel")
-      |> assert_has(heading(), text: loan)
+      |> click(by_role(:link, name: "Edit Details"))
+      |> expect(Expect.url(~r{/loans/#{loan.id}/edit(?:\?.*)?$}))
+      |> click(by_role(:link, name: "Cancel"))
+      |> expect(heading() |> by_css() |> filter(has_text: html_text(loan)) |> visible())
     end
 
     test "allows lending money from a loan", %{conn: conn, loan: loan} do
-      conn
+      :phoenix
+      |> start_session(conn: conn)
       |> visit(~p"/loans/#{loan}")
-      |> click_link("Lend")
-      |> assert_path(~p"/loans/#{loan}/loans/new")
-      |> click_link("Cancel")
-      |> assert_has(heading(), text: loan)
+      |> click(by_role(:link, name: "Lend"))
+      |> expect(Expect.url(~p"/loans/#{loan}/loans/new"))
+      |> click(by_role(:link, name: "Cancel"))
+      |> expect(heading() |> by_css() |> filter(has_text: html_text(loan)) |> visible())
     end
 
     test "allows receiving payment on a loan", %{conn: conn, loan: loan} do
-      conn
+      :phoenix
+      |> start_session(conn: conn)
       |> visit(~p"/loans/#{loan}")
-      |> click_link("Payment")
-      |> assert_path(~p"/loans/#{loan}/payments/new")
-      |> click_link("Cancel")
-      |> assert_has(heading(), text: loan)
+      |> click(by_role(:link, name: "Payment"))
+      |> expect(Expect.url(~p"/loans/#{loan}/payments/new"))
+      |> click(by_role(:link, name: "Cancel"))
+      |> expect(heading() |> by_css() |> filter(has_text: html_text(loan)) |> visible())
     end
   end
 end

@@ -13,25 +13,38 @@ defmodule FreedomAccountWeb.LoanLive.TransactionFormTest do
       new_memo = Factory.memo()
       new_amount = Money.negate!(Factory.money())
 
-      conn
+      :phoenix
+      |> start_session(conn: conn)
       |> visit(~p"/loans/#{loan}/transactions/#{transaction}/edit")
-      |> assert_has(page_title(), text: "Edit Loan Transaction")
-      |> assert_has(heading(), text: "Edit Loan Transaction")
-      |> assert_has(role("loan"), text: loan)
-      |> assert_has(field_value("#loan_transaction_date", transaction.date))
-      |> assert_has(field_value("#loan_transaction_memo", transaction.memo))
-      |> assert_has(field_value("#loan_transaction_amount", transaction.amount))
-      |> fill_in("Date", with: new_date)
-      |> fill_in("Memo", with: new_memo)
-      |> fill_in("Amount", with: new_amount)
-      |> click_button("Save Transaction")
-      |> assert_has(flash(:info), text: "Transaction updated successfully")
-      |> assert_has(heading(), text: loan)
-      |> assert_has(heading(), text: MoneyUtils.format(new_amount))
-      |> assert_has(sidebar_loan_balance(loan), text: MoneyUtils.format(new_amount))
-      |> assert_has(table_cell(), text: "#{new_date}")
-      |> assert_has(table_cell(), text: new_memo)
-      |> assert_has(role("loan"), text: MoneyUtils.format(new_amount))
+      |> expect(page_title_contains("Edit Loan Transaction"))
+      |> expect(heading() |> by_css() |> filter(has_text: html_text("Edit Loan Transaction")) |> visible())
+      |> expect("loan" |> role() |> by_css() |> filter(has_text: html_text(loan)) |> visible())
+      |> expect(visible(by_css(field_value("#loan_transaction_date", transaction.date))))
+      |> expect(visible(by_css(field_value("#loan_transaction_memo", transaction.memo))))
+      |> expect(visible(by_css(field_value("#loan_transaction_amount", transaction.amount))))
+      |> fill(by_label("Date", exact: true), to_string(new_date))
+      |> fill(by_label("Memo", exact: true), to_string(new_memo))
+      |> fill(by_label("Amount", exact: true), to_string(new_amount))
+      |> click(by_role(:button, name: "Save Transaction"))
+      |> expect(
+        :info
+        |> flash()
+        |> by_css()
+        |> filter(has_text: html_text("Transaction updated successfully"))
+        |> visible()
+      )
+      |> expect(heading() |> by_css() |> filter(has_text: html_text(loan)) |> visible())
+      |> expect(heading() |> by_css() |> filter(has_text: html_text(MoneyUtils.format(new_amount))) |> visible())
+      |> expect(
+        loan
+        |> sidebar_loan_balance()
+        |> by_css()
+        |> filter(has_text: html_text(MoneyUtils.format(new_amount)))
+        |> visible()
+      )
+      |> expect(table_cell() |> by_css() |> filter(has_text: html_text("#{new_date}")) |> visible())
+      |> expect(table_cell() |> by_css() |> filter(has_text: html_text(new_memo)) |> visible())
+      |> expect("loan" |> role() |> by_css() |> filter(has_text: html_text(MoneyUtils.format(new_amount))) |> visible())
     end
 
     test "does not update transaction on cancel", %{conn: conn, loan: loan} do
@@ -40,15 +53,22 @@ defmodule FreedomAccountWeb.LoanLive.TransactionFormTest do
       new_memo = Factory.memo()
       new_amount = Money.negate!(Factory.money())
 
-      conn
+      :phoenix
+      |> start_session(conn: conn)
       |> visit(~p"/loans/#{loan}/transactions/#{transaction}/edit")
-      |> fill_in("Date", with: new_date)
-      |> fill_in("Memo", with: new_memo)
-      |> fill_in("Amount", with: new_amount)
-      |> click_link("Cancel")
-      |> assert_has(heading(), text: loan)
-      |> assert_has(heading(), text: MoneyUtils.format(transaction.amount))
-      |> assert_has(sidebar_loan_balance(loan), text: MoneyUtils.format(transaction.amount))
+      |> fill(by_label("Date", exact: true), to_string(new_date))
+      |> fill(by_label("Memo", exact: true), to_string(new_memo))
+      |> fill(by_label("Amount", exact: true), to_string(new_amount))
+      |> click(by_role(:link, name: "Cancel"))
+      |> expect(heading() |> by_css() |> filter(has_text: html_text(loan)) |> visible())
+      |> expect(heading() |> by_css() |> filter(has_text: html_text(MoneyUtils.format(transaction.amount))) |> visible())
+      |> expect(
+        loan
+        |> sidebar_loan_balance()
+        |> by_css()
+        |> filter(has_text: html_text(MoneyUtils.format(transaction.amount)))
+        |> visible()
+      )
     end
   end
 end

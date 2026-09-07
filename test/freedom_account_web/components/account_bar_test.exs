@@ -9,40 +9,44 @@ defmodule FreedomAccountWeb.AccountBarTest do
     setup [:create_account]
 
     test "displays account", %{conn: conn, account: account} do
-      conn
+      :phoenix
+      |> start_session(conn: conn)
       |> visit(~p"/")
-      |> assert_has(title(), text: "Freedom Account")
-      |> assert_has(heading(), text: account.name)
+      |> expect(title() |> by_css() |> filter(has_text: html_text("Freedom Account")) |> visible())
+      |> expect(heading() |> by_css() |> filter(has_text: html_text(account.name)) |> visible())
     end
 
     test "updates account from fund list view", %{conn: conn} do
-      conn
+      :phoenix
+      |> start_session(conn: conn)
       |> visit(~p"/funds")
-      |> click_link("Settings")
-      |> assert_path(~p"/account/edit")
-      |> assert_has(heading(), text: "Edit Account Settings")
-      |> click_button("Save Account")
-      |> assert_has(page_title(), text: "Funds")
+      |> click(by_role(:link, name: "Settings"))
+      |> expect(Expect.url(~r{/account/edit(?:\?.*)?$}))
+      |> expect(heading() |> by_css() |> filter(has_text: html_text("Edit Account Settings")) |> visible())
+      |> click(by_role(:button, name: "Save Account"))
+      |> expect(page_title_contains("Funds"))
     end
 
     test "updates account from loan list view", %{conn: conn} do
-      conn
+      :phoenix
+      |> start_session(conn: conn)
       |> visit(~p"/loans")
-      |> click_link("Settings")
-      |> assert_path(~p"/account/edit")
-      |> assert_has(heading(), text: "Edit Account Settings")
-      |> click_button("Save Account")
-      |> assert_has(page_title(), text: "Loans")
+      |> click(by_role(:link, name: "Settings"))
+      |> expect(Expect.url(~r{/account/edit(?:\?.*)?$}))
+      |> expect(heading() |> by_css() |> filter(has_text: html_text("Edit Account Settings")) |> visible())
+      |> click(by_role(:button, name: "Save Account"))
+      |> expect(page_title_contains("Loans"))
     end
 
     test "updates account from transaction list view", %{conn: conn} do
-      conn
+      :phoenix
+      |> start_session(conn: conn)
       |> visit(~p"/transactions")
-      |> click_link("Settings")
-      |> assert_path(~p"/account/edit")
-      |> assert_has(heading(), text: "Edit Account Settings")
-      |> click_button("Save Account")
-      |> assert_has(page_title(), text: "Transactions")
+      |> click(by_role(:link, name: "Settings"))
+      |> expect(Expect.url(~r{/account/edit(?:\?.*)?$}))
+      |> expect(heading() |> by_css() |> filter(has_text: html_text("Edit Account Settings")) |> visible())
+      |> click(by_role(:button, name: "Save Account"))
+      |> expect(page_title_contains("Transactions"))
     end
   end
 end

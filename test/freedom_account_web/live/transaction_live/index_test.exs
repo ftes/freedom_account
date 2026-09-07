@@ -10,9 +10,10 @@ defmodule FreedomAccountWeb.TransactionLive.IndexTest do
 
   describe "listing account transactions" do
     test "shows message when account has no transactions", %{conn: conn} do
-      conn
+      :phoenix
+      |> start_session(conn: conn)
       |> visit(~p"/transactions")
-      |> assert_has("#no-transactions")
+      |> expect(visible(by_css("#no-transactions")))
     end
 
     test "displays transactions", %{conn: conn, account: account, fund: fund, loan: loan} do
@@ -24,23 +25,36 @@ defmodule FreedomAccountWeb.TransactionLive.IndexTest do
       payment = Factory.payment(loan)
       balance = MoneyUtils.sum([deposit_line_item.amount, withdrawal_line_item.amount, lend.amount, payment.amount])
 
-      conn
+      :phoenix
+      |> start_session(conn: conn)
       |> visit(~p"/transactions")
-      |> assert_has(table_cell(), text: "#{deposit.date}")
-      |> assert_has(table_cell(), text: deposit.memo)
-      |> assert_has(role("in"), text: MoneyUtils.format(deposit_line_item.amount))
-      |> assert_has(table_cell(), text: "#{withdrawal.date}")
-      |> assert_has(table_cell(), text: withdrawal.memo)
-      |> assert_has(table_cell(), count: 2, text: fund)
-      |> assert_has(role("out"), text: MoneyUtils.format(withdrawal_line_item.amount))
-      |> assert_has(table_cell(), text: "#{lend.date}")
-      |> assert_has(table_cell(), text: lend.memo)
-      |> assert_has(role("out"), text: MoneyUtils.format(lend.amount))
-      |> assert_has(table_cell(), text: "#{payment.date}")
-      |> assert_has(table_cell(), text: payment.memo)
-      |> assert_has(table_cell(), count: 2, text: loan)
-      |> assert_has(role("in"), text: MoneyUtils.format(payment.amount))
-      |> assert_has(table_cell(), text: MoneyUtils.format(balance))
+      |> expect(table_cell() |> by_css() |> filter(has_text: html_text("#{deposit.date}")) |> visible())
+      |> expect(table_cell() |> by_css() |> filter(has_text: html_text(deposit.memo)) |> visible())
+      |> expect(
+        "in"
+        |> role()
+        |> by_css()
+        |> filter(has_text: html_text(MoneyUtils.format(deposit_line_item.amount)))
+        |> visible()
+      )
+      |> expect(table_cell() |> by_css() |> filter(has_text: html_text("#{withdrawal.date}")) |> visible())
+      |> expect(table_cell() |> by_css() |> filter(has_text: html_text(withdrawal.memo)) |> visible())
+      |> expect(table_cell() |> by_css() |> filter(has_text: html_text(fund)) |> count(2))
+      |> expect(
+        "out"
+        |> role()
+        |> by_css()
+        |> filter(has_text: html_text(MoneyUtils.format(withdrawal_line_item.amount)))
+        |> visible()
+      )
+      |> expect(table_cell() |> by_css() |> filter(has_text: html_text("#{lend.date}")) |> visible())
+      |> expect(table_cell() |> by_css() |> filter(has_text: html_text(lend.memo)) |> visible())
+      |> expect("out" |> role() |> by_css() |> filter(has_text: html_text(MoneyUtils.format(lend.amount))) |> visible())
+      |> expect(table_cell() |> by_css() |> filter(has_text: html_text("#{payment.date}")) |> visible())
+      |> expect(table_cell() |> by_css() |> filter(has_text: html_text(payment.memo)) |> visible())
+      |> expect(table_cell() |> by_css() |> filter(has_text: html_text(loan)) |> count(2))
+      |> expect("in" |> role() |> by_css() |> filter(has_text: html_text(MoneyUtils.format(payment.amount))) |> visible())
+      |> expect(table_cell() |> by_css() |> filter(has_text: html_text(MoneyUtils.format(balance))) |> visible())
     end
 
     test "paginates transactions", %{conn: conn, fund: fund} do
@@ -54,73 +68,78 @@ defmodule FreedomAccountWeb.TransactionLive.IndexTest do
 
       [page1, page2, page3] = Enum.chunk_every(transactions, page_size)
 
-      conn
+      :phoenix
+      |> start_session(conn: conn)
       |> visit(~p"/transactions")
       |> assert_has_all_transactions(page1)
-      |> assert_has(disabled("button"), text: "Previous Page")
-      |> assert_has(enabled("button"), text: "Next Page")
-      |> click_button("Next Page")
+      |> expect("button" |> disabled() |> by_css() |> filter(has_text: html_text("Previous Page")) |> visible())
+      |> expect("button" |> enabled() |> by_css() |> filter(has_text: html_text("Next Page")) |> visible())
+      |> click(by_role(:button, name: "Next Page"))
       |> assert_has_all_transactions(page2)
-      |> assert_has(enabled("button"), text: "Previous Page")
-      |> assert_has(enabled("button"), text: "Next Page")
-      |> click_button("Next Page")
+      |> expect("button" |> enabled() |> by_css() |> filter(has_text: html_text("Previous Page")) |> visible())
+      |> expect("button" |> enabled() |> by_css() |> filter(has_text: html_text("Next Page")) |> visible())
+      |> click(by_role(:button, name: "Next Page"))
       |> assert_has_all_transactions(page3)
-      |> assert_has(enabled("button"), text: "Previous Page")
-      |> assert_has(disabled("button"), text: "Next Page")
-      |> click_button("Previous Page")
-      |> click_button("Previous Page")
+      |> expect("button" |> enabled() |> by_css() |> filter(has_text: html_text("Previous Page")) |> visible())
+      |> expect("button" |> disabled() |> by_css() |> filter(has_text: html_text("Next Page")) |> visible())
+      |> click(by_role(:button, name: "Previous Page"))
+      |> click(by_role(:button, name: "Previous Page"))
       |> assert_has_all_transactions(page1)
-      |> assert_has(disabled("button"), text: "Previous Page")
-      |> assert_has(enabled("button"), text: "Next Page")
+      |> expect("button" |> disabled() |> by_css() |> filter(has_text: html_text("Previous Page")) |> visible())
+      |> expect("button" |> enabled() |> by_css() |> filter(has_text: html_text("Next Page")) |> visible())
     end
 
     test "allows editing fund transaction in listing", %{conn: conn, fund: fund} do
       deposit = Factory.deposit(fund)
 
-      conn
+      :phoenix
+      |> start_session(conn: conn)
       |> visit(~p"/transactions")
-      |> click_link("#txn-fund-#{deposit.id} td", deposit.memo)
-      |> assert_path(~p"/transactions/#{deposit}/edit", query_params: %{"type" => "fund"})
-      |> click_link("Cancel")
-      |> assert_has(active_tab(), text: "Transactions")
+      |> click("#txn-fund-#{deposit.id} td" |> by_css() |> filter(has_text: html_text(deposit.memo)))
+      |> expect(Expect.url(~p"/transactions/#{deposit}/edit?type=fund"))
+      |> click(by_role(:link, name: "Cancel"))
+      |> expect(active_tab() |> by_css() |> filter(has_text: html_text("Transactions")) |> visible())
     end
 
     test "allows editing loan transaction in listing", %{conn: conn, loan: loan} do
       transaction = Factory.lend(loan)
 
-      conn
+      :phoenix
+      |> start_session(conn: conn)
       |> visit(~p"/transactions")
-      |> click_link("#txn-loan-#{transaction.id} td", transaction.memo)
-      |> assert_path(~p"/transactions/#{transaction}/edit", query_params: %{"type" => "loan"})
-      |> click_link("Cancel")
-      |> assert_has(active_tab(), text: "Transactions")
+      |> click("#txn-loan-#{transaction.id} td" |> by_css() |> filter(has_text: html_text(transaction.memo)))
+      |> expect(Expect.url(~p"/transactions/#{transaction}/edit?type=loan"))
+      |> click(by_role(:link, name: "Cancel"))
+      |> expect(active_tab() |> by_css() |> filter(has_text: html_text("Transactions")) |> visible())
     end
 
     test "deletes fund transaction in listing", %{conn: conn, fund: fund} do
       deposit = Factory.deposit(fund)
 
-      conn
+      :phoenix
+      |> start_session(conn: conn)
       |> visit(~p"/transactions")
-      |> click_link(action_link("#txn-fund-#{deposit.id}"), "Delete")
-      |> assert_has(active_tab(), text: "Transactions")
-      |> assert_has(account_balance(), text: "$0.00")
-      |> refute_has("#txn-#{deposit.id}")
+      |> click("#txn-fund-#{deposit.id}" |> action_link() |> by_css() |> filter(has_text: html_text("Delete")))
+      |> expect(active_tab() |> by_css() |> filter(has_text: html_text("Transactions")) |> visible())
+      |> expect(account_balance() |> by_css() |> filter(has_text: html_text("$0.00")) |> visible())
+      |> expect(count(by_css("#txn-#{deposit.id}"), 0))
     end
 
     test "deletes loan transaction in listing", %{conn: conn, loan: loan} do
       lend = Factory.lend(loan)
 
-      conn
+      :phoenix
+      |> start_session(conn: conn)
       |> visit(~p"/transactions")
-      |> click_link(action_link("#txn-loan-#{lend.id}"), "Delete")
-      |> assert_has(active_tab(), text: "Transactions")
-      |> assert_has(account_balance(), text: "$0.00")
-      |> refute_has("#txn-#{lend.id}")
+      |> click("#txn-loan-#{lend.id}" |> action_link() |> by_css() |> filter(has_text: html_text("Delete")))
+      |> expect(active_tab() |> by_css() |> filter(has_text: html_text("Transactions")) |> visible())
+      |> expect(account_balance() |> by_css() |> filter(has_text: html_text("$0.00")) |> visible())
+      |> expect(count(by_css("#txn-#{lend.id}"), 0))
     end
 
     defp assert_has_all_transactions(session, transactions) do
       Enum.reduce(transactions, session, fn txn, session ->
-        assert_has(session, table_cell(), text: "#{txn.date}")
+        expect(session, table_cell() |> by_css() |> filter(has_text: html_text("#{txn.date}")) |> visible())
       end)
     end
   end

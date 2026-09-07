@@ -2,7 +2,6 @@ defmodule FreedomAccountWeb.AccountLiveTest do
   use FreedomAccountWeb.ConnCase, async: true
 
   alias FreedomAccount.Factory
-  alias Phoenix.HTML.Safe
 
   describe "updating account settings" do
     setup :create_account
@@ -10,57 +9,81 @@ defmodule FreedomAccountWeb.AccountLiveTest do
     test "updates account settings", %{conn: conn} do
       %{deposits_per_year: deposits, name: name} = Factory.account_attrs()
 
-      conn
+      :phoenix
+      |> start_session(conn: conn)
       |> visit(~p"/account/edit")
-      |> assert_has(page_title(), text: "Edit Account Settings")
-      |> assert_has(heading(), text: "Edit Account Settings")
-      |> fill_in("Name", with: "")
-      |> fill_in("Deposits / year", with: "")
-      |> assert_has(field_error("#account_name"), text: "can't be blank")
-      |> assert_has(field_error("#account_deposits_per_year"), text: "can't be blank")
-      |> fill_in("Name", with: name)
-      |> fill_in("Deposits / year", with: deposits)
-      |> click_button("Save Account")
-      |> assert_has(flash(:info), text: "Account updated successfully")
-      |> assert_has(heading(), text: name)
+      |> expect(page_title_contains("Edit Account Settings"))
+      |> expect(heading() |> by_css() |> filter(has_text: html_text("Edit Account Settings")) |> visible())
+      |> fill(by_label("Name", exact: true), to_string(""))
+      |> fill(by_label("Deposits / year", exact: true), to_string(""))
+      |> expect(
+        "#account_name"
+        |> field_error()
+        |> by_css()
+        |> filter(has_text: html_text("can't be blank"))
+        |> visible()
+      )
+      |> expect(
+        "#account_deposits_per_year"
+        |> field_error()
+        |> by_css()
+        |> filter(has_text: html_text("can't be blank"))
+        |> visible()
+      )
+      |> fill(by_label("Name", exact: true), to_string(name))
+      |> fill(by_label("Deposits / year", exact: true), to_string(deposits))
+      |> click(by_role(:button, name: "Save Account"))
+      |> expect(:info |> flash() |> by_css() |> filter(has_text: html_text("Account updated successfully")) |> visible())
+      |> expect(heading() |> by_css() |> filter(has_text: html_text(name)) |> visible())
     end
 
     test "selects default fund", %{account: account, conn: conn} do
       funds = for _i <- 1..5, do: Factory.fund(account)
       default_fund = Enum.random(funds)
+      default_fund_label = html_text(default_fund)
 
-      conn
+      :phoenix
+      |> start_session(conn: conn)
       |> visit(~p"/account/edit")
-      |> select("Default fund", option: Safe.to_iodata(default_fund))
-      |> click_button("Save Account")
-      |> assert_has(flash(:info), text: "Account updated successfully")
+      |> select_option(by_css("#default-fund"), %{label: default_fund_label})
+      |> click(by_role(:button, name: "Save Account"))
+      |> expect(:info |> flash() |> by_css() |> filter(has_text: html_text("Account updated successfully")) |> visible())
       |> visit(~p"/account/edit")
-      |> assert_has(selected_option("#default-fund"), text: default_fund)
+      |> expect(
+        "#default-fund"
+        |> selected_option()
+        |> by_css()
+        |> filter(has_text: html_text(default_fund))
+        |> visible()
+      )
     end
 
     test "does not update account settings on cancel", %{account: account, conn: conn} do
       %{deposits_per_year: deposits, name: name} = Factory.account_attrs()
 
-      conn
+      :phoenix
+      |> start_session(conn: conn)
       |> visit(~p"/account/edit")
-      |> fill_in("Name", with: name)
-      |> fill_in("Deposits / year", with: deposits)
-      |> click_link("Cancel")
-      |> assert_has(heading(), text: account.name)
+      |> fill(by_label("Name", exact: true), to_string(name))
+      |> fill(by_label("Deposits / year", exact: true), to_string(deposits))
+      |> click(by_role(:link, name: "Cancel"))
+      |> expect(heading() |> by_css() |> filter(has_text: html_text(account.name)) |> visible())
     end
 
     test "returns to fund list by default on save", %{conn: conn} do
-      conn
+      :phoenix
+      |> start_session(conn: conn)
       |> visit(~p"/account/edit")
-      |> click_button("Save Account")
-      |> assert_has(active_tab(), text: "Funds")
+      |> click(by_role(:button, name: "Save Account"))
+      |> expect(active_tab() |> by_css() |> filter(has_text: html_text("Funds")) |> visible())
     end
 
     test "returns to fund list by default on cancel", %{conn: conn} do
-      conn
+      :phoenix
+      |> start_session(conn: conn)
       |> visit(~p"/account/edit")
-      |> click_link("Cancel")
-      |> assert_has(active_tab(), text: "Funds")
+      |> click(by_role(:link, name: "Cancel"))
+      |> expect(active_tab() |> by_css() |> filter(has_text: html_text("Funds")) |> visible())
     end
 
     for {return_to, tab_title} <- [
@@ -74,10 +97,11 @@ defmodule FreedomAccountWeb.AccountLiveTest do
 
         params = %{return_to: return_to}
 
-        conn
+        :phoenix
+        |> start_session(conn: conn)
         |> visit(~p"/account/edit?#{params}")
-        |> click_button("Save Account")
-        |> assert_has(active_tab(), text: tab_title)
+        |> click(by_role(:button, name: "Save Account"))
+        |> expect(active_tab() |> by_css() |> filter(has_text: html_text(tab_title)) |> visible())
       end
 
       test "returns to #{return_to} list when specified on cancel", %{conn: conn} do
@@ -86,10 +110,11 @@ defmodule FreedomAccountWeb.AccountLiveTest do
 
         params = %{return_to: return_to}
 
-        conn
+        :phoenix
+        |> start_session(conn: conn)
         |> visit(~p"/account/edit?#{params}")
-        |> click_link("Cancel")
-        |> assert_has(active_tab(), text: tab_title)
+        |> click(by_role(:link, name: "Cancel"))
+        |> expect(active_tab() |> by_css() |> filter(has_text: html_text(tab_title)) |> visible())
       end
     end
   end

@@ -20,22 +20,23 @@ defmodule FreedomAccountWeb.AccountBalanceTest do
         path = page_path(page, context)
         total_balance = expected_balance(funds)
 
-        conn
+        :phoenix
+        |> start_session(conn: conn)
         |> visit(path)
-        |> assert_has(balance(page), text: "#{total_balance}")
+        |> expect(page |> balance() |> by_css() |> filter(has_text: html_text("#{total_balance}")) |> visible())
       end
 
       test "updates balance when transaction is created", %{account: account, conn: conn, funds: funds} = context do
         page = unquote(page)
         path = page_path(page, context)
 
-        session = visit(conn, path)
+        session = :phoenix |> start_session(conn: conn) |> visit(path)
 
         {:ok, _transaction} = Transactions.regular_deposit(account, Factory.date(), funds)
 
         new_balance = account |> Funds.list_active_funds() |> expected_balance()
 
-        assert_has(session, balance(page), text: "#{new_balance}")
+        expect(session, page |> balance() |> by_css() |> filter(has_text: html_text("#{new_balance}")) |> visible())
       end
     end
   end
@@ -49,9 +50,16 @@ defmodule FreedomAccountWeb.AccountBalanceTest do
         path = page_path(page, context)
         total_balance = expected_balance(loans)
 
-        conn
+        :phoenix
+        |> start_session(conn: conn)
         |> visit(path)
-        |> assert_has(balance(page), text: MoneyUtils.format(total_balance))
+        |> expect(
+          page
+          |> balance()
+          |> by_css()
+          |> filter(has_text: html_text(MoneyUtils.format(total_balance)))
+          |> visible()
+        )
       end
 
       test "updates balance when transaction is created", %{account: account, conn: conn, loans: loans} = context do
@@ -59,13 +67,16 @@ defmodule FreedomAccountWeb.AccountBalanceTest do
         page = unquote(page)
         path = page_path(page, context)
 
-        session = visit(conn, path)
+        session = :phoenix |> start_session(conn: conn) |> visit(path)
 
         _transaction = Factory.lend(loan)
 
         new_balance = account |> Loans.list_active_loans() |> expected_balance()
 
-        assert_has(session, balance(page), text: MoneyUtils.format(new_balance))
+        expect(
+          session,
+          page |> balance() |> by_css() |> filter(has_text: html_text(MoneyUtils.format(new_balance))) |> visible()
+        )
       end
     end
   end

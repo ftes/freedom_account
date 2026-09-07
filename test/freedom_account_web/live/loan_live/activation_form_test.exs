@@ -4,7 +4,6 @@ defmodule FreedomAccountWeb.LoanLive.ActivationFormTest do
   import Money.Sigil
 
   alias FreedomAccount.Factory
-  alias Phoenix.HTML.Safe
 
   describe "activating/deactivating loans" do
     setup [:create_account, :create_loans]
@@ -12,39 +11,41 @@ defmodule FreedomAccountWeb.LoanLive.ActivationFormTest do
     test "activates/deactivates loans", %{conn: conn, loans: loans} do
       [can_deactivate, inactive, non_zero_balance, to_deactivate] = loans
 
-      conn
+      :phoenix
+      |> start_session(conn: conn)
       |> visit(~p"/loans/activate")
-      |> assert_has(page_title(), text: "Activate/Deactivate Loans")
-      |> assert_has(heading(), text: "Activate/Deactivate Loans")
-      |> assert_has("label", text: can_deactivate)
-      |> assert_has("label", text: inactive)
-      |> assert_has("label", text: to_deactivate)
-      |> refute_has("label", text: non_zero_balance)
-      |> uncheck(Safe.to_iodata(to_deactivate))
-      |> check(Safe.to_iodata(inactive))
-      |> click_button("Update Loans")
-      |> assert_has(flash(:info), text: "Loans updated successfully")
-      |> assert_has(active_tab(), text: "Loans")
-      |> assert_has(loan_card(can_deactivate))
-      |> assert_has(loan_card(inactive))
-      |> assert_has(loan_card(non_zero_balance))
-      |> refute_has(loan_card(to_deactivate))
+      |> expect(page_title_contains("Activate/Deactivate Loans"))
+      |> expect(heading() |> by_css() |> filter(has_text: html_text("Activate/Deactivate Loans")) |> visible())
+      |> expect("label" |> by_css() |> filter(has_text: html_text(can_deactivate)) |> visible())
+      |> expect("label" |> by_css() |> filter(has_text: html_text(inactive)) |> visible())
+      |> expect("label" |> by_css() |> filter(has_text: html_text(to_deactivate)) |> visible())
+      |> expect("label" |> by_css() |> filter(has_text: html_text(non_zero_balance)) |> count(0))
+      |> uncheck(exact_label(to_deactivate))
+      |> check(exact_label(inactive))
+      |> click(by_role(:button, name: "Update Loans"))
+      |> expect(:info |> flash() |> by_css() |> filter(has_text: html_text("Loans updated successfully")) |> visible())
+      |> expect(active_tab() |> by_css() |> filter(has_text: html_text("Loans")) |> visible())
+      |> expect(visible(by_css(loan_card(can_deactivate))))
+      |> expect(visible(by_css(loan_card(inactive))))
+      |> expect(visible(by_css(loan_card(non_zero_balance))))
+      |> expect(count(by_css(loan_card(to_deactivate)), 0))
     end
 
     test "does not activate/deactivate loans on cancel", %{conn: conn, loans: loans} do
       [can_deactivate, inactive, non_zero_balance, to_deactivate] = loans
 
-      conn
+      :phoenix
+      |> start_session(conn: conn)
       |> visit(~p"/loans/activate")
-      |> assert_has(heading(), text: "Activate/Deactivate Loans")
-      |> uncheck(Safe.to_iodata(to_deactivate))
-      |> check(Safe.to_iodata(inactive))
-      |> click_link("Cancel")
-      |> assert_has(active_tab(), text: "Loans")
-      |> assert_has(loan_card(can_deactivate))
-      |> refute_has(loan_card(inactive))
-      |> assert_has(loan_card(non_zero_balance))
-      |> assert_has(loan_card(to_deactivate))
+      |> expect(heading() |> by_css() |> filter(has_text: html_text("Activate/Deactivate Loans")) |> visible())
+      |> uncheck(exact_label(to_deactivate))
+      |> check(exact_label(inactive))
+      |> click(by_role(:link, name: "Cancel"))
+      |> expect(active_tab() |> by_css() |> filter(has_text: html_text("Loans")) |> visible())
+      |> expect(visible(by_css(loan_card(can_deactivate))))
+      |> expect(count(by_css(loan_card(inactive)), 0))
+      |> expect(visible(by_css(loan_card(non_zero_balance))))
+      |> expect(visible(by_css(loan_card(to_deactivate))))
     end
   end
 

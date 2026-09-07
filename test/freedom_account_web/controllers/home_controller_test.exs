@@ -4,8 +4,9 @@ defmodule FreedomAccountWeb.HomeControllerTest do
   setup :create_account
 
   test "redirects to fund list page", %{conn: conn} do
-    conn
+    :phoenix
+    |> start_session(conn: conn)
     |> visit(~p"/")
-    |> assert_has(page_title(), text: "Funds")
+    |> expect(page_title_contains("Funds"))
   end
 end

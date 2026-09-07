@@ -18,23 +18,55 @@ defmodule FreedomAccountWeb.ConnCase do
   use ExUnit.CaseTemplate
 
   alias Phoenix.ConnTest
+  alias Phoenix.HTML.Safe
 
   using opts do
     quote do
       use FreedomAccount.DataCase, unquote(opts)
       use FreedomAccountWeb, :verified_routes
 
+      import Cerberus
+      import Cerberus.Expect, except: [disabled: 1, enabled: 1, url: 1]
+      import Cerberus.Locator
       import FreedomAccountWeb.ElementSelectors
       import Phoenix.ConnTest
-      import PhoenixTest
       import Plug.Conn
       import unquote(__MODULE__)
 
+      alias Cerberus.Expect
+      alias Cerberus.Page
+
       @endpoint FreedomAccountWeb.Endpoint
+      @moduletag :cerberus
     end
   end
 
   setup _context do
     {:ok, conn: ConnTest.build_conn()}
+  end
+
+  @spec html_text(Safe.t()) :: String.t()
+  def html_text(value) when is_binary(value), do: value
+
+  def html_text(value) do
+    value
+    |> Safe.to_iodata()
+    |> IO.iodata_to_binary()
+  end
+
+  @spec exact_label(Safe.t()) :: Cerberus.Locator.t()
+  def exact_label(value) do
+    value
+    |> html_text()
+    |> Cerberus.Locator.by_label(exact: true)
+  end
+
+  @spec page_title_contains(Safe.t()) :: Cerberus.Expect.t()
+  def page_title_contains(value) do
+    value
+    |> html_text()
+    |> Regex.escape()
+    |> Regex.compile!()
+    |> Cerberus.Page.to_have_title()
   end
 end

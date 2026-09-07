@@ -15,25 +15,44 @@ defmodule FreedomAccountWeb.FundLive.TransactionFormTest do
       new_memo = Factory.memo()
       new_amount = Factory.money()
 
-      conn
+      :phoenix
+      |> start_session(conn: conn)
       |> visit(~p"/funds/#{fund}/transactions/#{deposit}/edit")
-      |> assert_has(page_title(), text: "Edit Transaction")
-      |> assert_has(heading(), text: "Edit Transaction")
-      |> assert_has(field_value("#transaction_date", deposit.date))
-      |> assert_has(field_value("#transaction_memo", deposit.memo))
-      |> assert_has(field_value("#transaction_line_items_0_amount", line_item.amount))
-      |> assert_has("label", text: fund.name)
-      |> fill_in("Date", with: new_date)
-      |> fill_in("Memo", with: new_memo)
-      |> fill_in("Amount 0", with: new_amount)
-      |> click_button("Save Transaction")
-      |> assert_has(flash(:info), text: "Transaction updated successfully")
-      |> assert_has(heading(), text: fund)
-      |> assert_has(heading(), text: MoneyUtils.format(new_amount))
-      |> assert_has(sidebar_fund_balance(fund), text: MoneyUtils.format(new_amount))
-      |> assert_has(table_cell(), text: "#{new_date}")
-      |> assert_has(table_cell(), text: new_memo)
-      |> assert_has(role("deposit"), text: MoneyUtils.format(new_amount))
+      |> expect(page_title_contains("Edit Transaction"))
+      |> expect(heading() |> by_css() |> filter(has_text: html_text("Edit Transaction")) |> visible())
+      |> expect(visible(by_css(field_value("#transaction_date", deposit.date))))
+      |> expect(visible(by_css(field_value("#transaction_memo", deposit.memo))))
+      |> expect(visible(by_css(field_value("#transaction_line_items_0_amount", line_item.amount))))
+      |> expect("label" |> by_css() |> filter(has_text: html_text(fund.name)) |> visible())
+      |> fill(by_label("Date", exact: true), to_string(new_date))
+      |> fill(by_label("Memo", exact: true), to_string(new_memo))
+      |> fill(by_label("Amount 0", exact: true), to_string(new_amount))
+      |> click(by_role(:button, name: "Save Transaction"))
+      |> expect(
+        :info
+        |> flash()
+        |> by_css()
+        |> filter(has_text: html_text("Transaction updated successfully"))
+        |> visible()
+      )
+      |> expect(heading() |> by_css() |> filter(has_text: html_text(fund)) |> visible())
+      |> expect(heading() |> by_css() |> filter(has_text: html_text(MoneyUtils.format(new_amount))) |> visible())
+      |> expect(
+        fund
+        |> sidebar_fund_balance()
+        |> by_css()
+        |> filter(has_text: html_text(MoneyUtils.format(new_amount)))
+        |> visible()
+      )
+      |> expect(table_cell() |> by_css() |> filter(has_text: html_text("#{new_date}")) |> visible())
+      |> expect(table_cell() |> by_css() |> filter(has_text: html_text(new_memo)) |> visible())
+      |> expect(
+        "deposit"
+        |> role()
+        |> by_css()
+        |> filter(has_text: html_text(MoneyUtils.format(new_amount)))
+        |> visible()
+      )
     end
 
     test "edits multi-fund transaction", %{account: account, conn: conn, fund: fund1} do
@@ -45,28 +64,41 @@ defmodule FreedomAccountWeb.FundLive.TransactionFormTest do
       new_memo = Factory.memo()
       [new_amount1, new_amount2, new_amount3] = for _i <- 1..3, do: Factory.money()
 
-      conn
+      :phoenix
+      |> start_session(conn: conn)
       |> visit(~p"/funds/#{fund1}/transactions/#{transaction}/edit")
-      |> assert_has(page_title(), text: "Edit Transaction")
-      |> assert_has(heading(), text: "Edit Transaction")
-      |> assert_has(field_value("#transaction_date", transaction.date))
-      |> assert_has(field_value("#transaction_memo", transaction.memo))
-      |> assert_has(field_value("#transaction_line_items_0_amount", line_item1.amount))
-      |> assert_has(field_value("#transaction_line_items_1_amount", line_item2.amount))
-      |> assert_has(field_value("#transaction_line_items_2_amount", line_item3.amount))
-      |> assert_has("label", text: fund1)
-      |> assert_has("label", text: fund2)
-      |> assert_has("label", text: fund3)
-      |> fill_in("Date", with: new_date)
-      |> fill_in("Memo", with: new_memo)
-      |> fill_in("Amount 0", with: new_amount1)
-      |> fill_in("Amount 1", with: new_amount2)
-      |> fill_in("Amount 2", with: new_amount3)
-      |> click_button("Save Transaction")
-      |> assert_has(flash(:info), text: "Transaction updated successfully")
-      |> assert_has(table_cell(), text: "#{new_date}")
-      |> assert_has(table_cell(), text: new_memo)
-      |> assert_has(role("deposit"), text: MoneyUtils.format(new_amount1))
+      |> expect(page_title_contains("Edit Transaction"))
+      |> expect(heading() |> by_css() |> filter(has_text: html_text("Edit Transaction")) |> visible())
+      |> expect(visible(by_css(field_value("#transaction_date", transaction.date))))
+      |> expect(visible(by_css(field_value("#transaction_memo", transaction.memo))))
+      |> expect(visible(by_css(field_value("#transaction_line_items_0_amount", line_item1.amount))))
+      |> expect(visible(by_css(field_value("#transaction_line_items_1_amount", line_item2.amount))))
+      |> expect(visible(by_css(field_value("#transaction_line_items_2_amount", line_item3.amount))))
+      |> expect("label" |> by_css() |> filter(has_text: html_text(fund1)) |> visible())
+      |> expect("label" |> by_css() |> filter(has_text: html_text(fund2)) |> visible())
+      |> expect("label" |> by_css() |> filter(has_text: html_text(fund3)) |> visible())
+      |> fill(by_label("Date", exact: true), to_string(new_date))
+      |> fill(by_label("Memo", exact: true), to_string(new_memo))
+      |> fill(by_label("Amount 0", exact: true), to_string(new_amount1))
+      |> fill(by_label("Amount 1", exact: true), to_string(new_amount2))
+      |> fill(by_label("Amount 2", exact: true), to_string(new_amount3))
+      |> click(by_role(:button, name: "Save Transaction"))
+      |> expect(
+        :info
+        |> flash()
+        |> by_css()
+        |> filter(has_text: html_text("Transaction updated successfully"))
+        |> visible()
+      )
+      |> expect(table_cell() |> by_css() |> filter(has_text: html_text("#{new_date}")) |> visible())
+      |> expect(table_cell() |> by_css() |> filter(has_text: html_text(new_memo)) |> visible())
+      |> expect(
+        "deposit"
+        |> role()
+        |> by_css()
+        |> filter(has_text: html_text(MoneyUtils.format(new_amount1)))
+        |> visible()
+      )
     end
 
     test "does not update transaction on cancel", %{conn: conn, fund: fund} do
@@ -76,15 +108,22 @@ defmodule FreedomAccountWeb.FundLive.TransactionFormTest do
       new_memo = Factory.memo()
       new_amount = Factory.money()
 
-      conn
+      :phoenix
+      |> start_session(conn: conn)
       |> visit(~p"/funds/#{fund}/transactions/#{deposit}/edit")
-      |> fill_in("Date", with: new_date)
-      |> fill_in("Memo", with: new_memo)
-      |> fill_in("Amount 0", with: new_amount)
-      |> click_link("Cancel")
-      |> assert_has(heading(), text: fund)
-      |> assert_has(heading(), text: MoneyUtils.format(line_item.amount))
-      |> assert_has(sidebar_fund_balance(fund), text: MoneyUtils.format(line_item.amount))
+      |> fill(by_label("Date", exact: true), to_string(new_date))
+      |> fill(by_label("Memo", exact: true), to_string(new_memo))
+      |> fill(by_label("Amount 0", exact: true), to_string(new_amount))
+      |> click(by_role(:link, name: "Cancel"))
+      |> expect(heading() |> by_css() |> filter(has_text: html_text(fund)) |> visible())
+      |> expect(heading() |> by_css() |> filter(has_text: html_text(MoneyUtils.format(line_item.amount))) |> visible())
+      |> expect(
+        fund
+        |> sidebar_fund_balance()
+        |> by_css()
+        |> filter(has_text: html_text(MoneyUtils.format(line_item.amount)))
+        |> visible()
+      )
     end
   end
 end

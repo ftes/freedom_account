@@ -12,38 +12,40 @@ defmodule FreedomAccountWeb.FundLive.FormTest do
     test "saves new fund", %{conn: conn} do
       %{budget: budget, icon: icon, name: name, times_per_year: times_per_year} = Factory.fund_attrs()
 
-      conn
+      :phoenix
+      |> start_session(conn: conn)
       |> visit(~p"/funds/new")
-      |> assert_has(page_title(), text: "Add Fund")
-      |> assert_has(heading(), text: "Add Fund")
-      |> fill_in("Icon", with: "")
-      |> fill_in("Name", with: "")
-      |> assert_has(field_error("#fund_icon"), text: "can't be blank")
-      |> assert_has(field_error("#fund_name"), text: "can't be blank")
-      |> fill_in("Icon", with: icon)
-      |> fill_in("Name", with: name)
-      |> fill_in("Budget", with: budget)
-      |> fill_in("Times/Year", with: times_per_year)
-      |> click_button("Save Fund")
-      |> assert_has(flash(:info), text: "Fund created successfully")
-      |> assert_has(fund_icon(), text: icon)
-      |> assert_has(fund_name(), text: name)
-      |> assert_has(fund_budget(), text: "#{budget}")
-      |> assert_has(fund_frequency(), text: "#{times_per_year}")
-      |> assert_has(fund_balance(), text: "$0.00")
+      |> expect(page_title_contains("Add Fund"))
+      |> expect(heading() |> by_css() |> filter(has_text: html_text("Add Fund")) |> visible())
+      |> fill(by_label("Icon", exact: true), to_string(""))
+      |> fill(by_label("Name", exact: true), to_string(""))
+      |> expect("#fund_icon" |> field_error() |> by_css() |> filter(has_text: html_text("can't be blank")) |> visible())
+      |> expect("#fund_name" |> field_error() |> by_css() |> filter(has_text: html_text("can't be blank")) |> visible())
+      |> fill(by_label("Icon", exact: true), to_string(icon))
+      |> fill(by_label("Name", exact: true), to_string(name))
+      |> fill(by_label("Budget", exact: true), to_string(budget))
+      |> fill(by_label("Times/Year", exact: true), to_string(times_per_year))
+      |> click(by_role(:button, name: "Save Fund"))
+      |> expect(:info |> flash() |> by_css() |> filter(has_text: html_text("Fund created successfully")) |> visible())
+      |> expect(fund_icon() |> by_css() |> filter(has_text: html_text(icon)) |> visible())
+      |> expect(fund_name() |> by_css() |> filter(has_text: html_text(name)) |> visible())
+      |> expect(fund_budget() |> by_css() |> filter(has_text: html_text("#{budget}")) |> visible())
+      |> expect(fund_frequency() |> by_css() |> filter(has_text: html_text("#{times_per_year}")) |> visible())
+      |> expect(fund_balance() |> by_css() |> filter(has_text: html_text("$0.00")) |> visible())
     end
 
     test "does not create fund on cancel", %{conn: conn} do
       %{budget: budget, icon: icon, name: name, times_per_year: times_per_year} = Factory.fund_attrs()
 
-      conn
+      :phoenix
+      |> start_session(conn: conn)
       |> visit(~p"/funds/new")
-      |> fill_in("Icon", with: icon)
-      |> fill_in("Name", with: name)
-      |> fill_in("Budget", with: budget)
-      |> fill_in("Times/Year", with: times_per_year)
-      |> click_link("Cancel")
-      |> refute_has(fund_name(), text: name)
+      |> fill(by_label("Icon", exact: true), to_string(icon))
+      |> fill(by_label("Name", exact: true), to_string(name))
+      |> fill(by_label("Budget", exact: true), to_string(budget))
+      |> fill(by_label("Times/Year", exact: true), to_string(times_per_year))
+      |> click(by_role(:link, name: "Cancel"))
+      |> expect(fund_name() |> by_css() |> filter(has_text: html_text(name)) |> count(0))
     end
   end
 
@@ -52,43 +54,63 @@ defmodule FreedomAccountWeb.FundLive.FormTest do
       fund = account |> Factory.fund() |> Factory.with_fund_balance()
       %{budget: budget, icon: icon, name: name, times_per_year: times_per_year} = Factory.fund_attrs()
 
-      conn
+      :phoenix
+      |> start_session(conn: conn)
       |> visit(~p"/funds/#{fund}/edit")
-      |> assert_has(page_title(), text: "Edit Fund")
-      |> assert_has(heading(), text: "Edit Fund")
-      |> fill_in("Icon", with: "")
-      |> fill_in("Name", with: "")
-      |> assert_has(field_error("#fund_icon"), text: "can't be blank")
-      |> assert_has(field_error("#fund_name"), text: "can't be blank")
-      |> fill_in("Icon", with: icon)
-      |> fill_in("Name", with: name)
-      |> fill_in("Budget", with: budget)
-      |> fill_in("Times/Year", with: times_per_year)
-      |> click_button("Save Fund")
-      |> assert_has(flash(:info), text: "Fund updated successfully")
-      |> assert_has(fund_icon(fund), text: icon)
-      |> assert_has(fund_name(fund), text: name)
-      |> assert_has(fund_budget(fund), text: "#{budget}")
-      |> assert_has(fund_frequency(fund), text: "#{times_per_year}")
-      |> assert_has(fund_balance(fund), text: MoneyUtils.format(fund.current_balance))
+      |> expect(page_title_contains("Edit Fund"))
+      |> expect(heading() |> by_css() |> filter(has_text: html_text("Edit Fund")) |> visible())
+      |> fill(by_label("Icon", exact: true), to_string(""))
+      |> fill(by_label("Name", exact: true), to_string(""))
+      |> expect("#fund_icon" |> field_error() |> by_css() |> filter(has_text: html_text("can't be blank")) |> visible())
+      |> expect("#fund_name" |> field_error() |> by_css() |> filter(has_text: html_text("can't be blank")) |> visible())
+      |> fill(by_label("Icon", exact: true), to_string(icon))
+      |> fill(by_label("Name", exact: true), to_string(name))
+      |> fill(by_label("Budget", exact: true), to_string(budget))
+      |> fill(by_label("Times/Year", exact: true), to_string(times_per_year))
+      |> click(by_role(:button, name: "Save Fund"))
+      |> expect(:info |> flash() |> by_css() |> filter(has_text: html_text("Fund updated successfully")) |> visible())
+      |> expect(fund |> fund_icon() |> by_css() |> filter(has_text: html_text(icon)) |> visible())
+      |> expect(fund |> fund_name() |> by_css() |> filter(has_text: html_text(name)) |> visible())
+      |> expect(fund |> fund_budget() |> by_css() |> filter(has_text: html_text("#{budget}")) |> visible())
+      |> expect(fund |> fund_frequency() |> by_css() |> filter(has_text: html_text("#{times_per_year}")) |> visible())
+      |> expect(
+        fund
+        |> fund_balance()
+        |> by_css()
+        |> filter(has_text: html_text(MoneyUtils.format(fund.current_balance)))
+        |> visible()
+      )
     end
 
     test "does not update fund on cancel", %{account: account, conn: conn} do
       fund = account |> Factory.fund() |> Factory.with_fund_balance()
       %{budget: budget, icon: icon, name: name, times_per_year: times_per_year} = Factory.fund_attrs()
 
-      conn
+      :phoenix
+      |> start_session(conn: conn)
       |> visit(~p"/funds/#{fund}/edit")
-      |> fill_in("Icon", with: icon)
-      |> fill_in("Name", with: name)
-      |> fill_in("Budget", with: budget)
-      |> fill_in("Times/Year", with: times_per_year)
-      |> click_link("Cancel")
-      |> assert_has(fund_icon(fund), text: fund.icon)
-      |> assert_has(fund_name(fund), text: fund.name)
-      |> assert_has(fund_budget(fund), text: "#{fund.budget}")
-      |> assert_has(fund_frequency(fund), text: "#{fund.times_per_year}")
-      |> assert_has(fund_balance(fund), text: MoneyUtils.format(fund.current_balance))
+      |> fill(by_label("Icon", exact: true), to_string(icon))
+      |> fill(by_label("Name", exact: true), to_string(name))
+      |> fill(by_label("Budget", exact: true), to_string(budget))
+      |> fill(by_label("Times/Year", exact: true), to_string(times_per_year))
+      |> click(by_role(:link, name: "Cancel"))
+      |> expect(fund |> fund_icon() |> by_css() |> filter(has_text: html_text(fund.icon)) |> visible())
+      |> expect(fund |> fund_name() |> by_css() |> filter(has_text: html_text(fund.name)) |> visible())
+      |> expect(fund |> fund_budget() |> by_css() |> filter(has_text: html_text("#{fund.budget}")) |> visible())
+      |> expect(
+        fund
+        |> fund_frequency()
+        |> by_css()
+        |> filter(has_text: html_text("#{fund.times_per_year}"))
+        |> visible()
+      )
+      |> expect(
+        fund
+        |> fund_balance()
+        |> by_css()
+        |> filter(has_text: html_text(MoneyUtils.format(fund.current_balance)))
+        |> visible()
+      )
     end
   end
 
@@ -96,45 +118,51 @@ defmodule FreedomAccountWeb.FundLive.FormTest do
     setup :create_fund
 
     test "returns to fund list by default on save", %{conn: conn, fund: fund} do
-      conn
+      :phoenix
+      |> start_session(conn: conn)
       |> visit(~p"/funds/#{fund}/edit")
-      |> click_button("Save Fund")
-      |> assert_has(active_tab(), text: "Funds")
+      |> click(by_role(:button, name: "Save Fund"))
+      |> expect(active_tab() |> by_css() |> filter(has_text: html_text("Funds")) |> visible())
     end
 
     test "returns to fund list by default on cancel", %{conn: conn, fund: fund} do
-      conn
+      :phoenix
+      |> start_session(conn: conn)
       |> visit(~p"/funds/#{fund}/edit")
-      |> click_link("Cancel")
-      |> assert_has(active_tab(), text: "Funds")
+      |> click(by_role(:link, name: "Cancel"))
+      |> expect(active_tab() |> by_css() |> filter(has_text: html_text("Funds")) |> visible())
     end
 
     test "returns to fund list when specified on save", %{conn: conn, fund: fund} do
-      conn
+      :phoenix
+      |> start_session(conn: conn)
       |> visit(~p"/funds/#{fund}/edit?return_to=index")
-      |> click_button("Save Fund")
-      |> assert_has(active_tab(), text: "Funds")
+      |> click(by_role(:button, name: "Save Fund"))
+      |> expect(active_tab() |> by_css() |> filter(has_text: html_text("Funds")) |> visible())
     end
 
     test "returns to fund list when specified on cancel", %{conn: conn, fund: fund} do
-      conn
+      :phoenix
+      |> start_session(conn: conn)
       |> visit(~p"/funds/#{fund}/edit?return_to=index")
-      |> click_link("Cancel")
-      |> assert_has(active_tab(), text: "Funds")
+      |> click(by_role(:link, name: "Cancel"))
+      |> expect(active_tab() |> by_css() |> filter(has_text: html_text("Funds")) |> visible())
     end
 
     test "returns to individual fund view when specified on save", %{conn: conn, fund: fund} do
-      conn
+      :phoenix
+      |> start_session(conn: conn)
       |> visit(~p"/funds/#{fund}/edit?return_to=show")
-      |> click_button("Save Fund")
-      |> assert_has(heading(), text: fund)
+      |> click(by_role(:button, name: "Save Fund"))
+      |> expect(heading() |> by_css() |> filter(has_text: html_text(fund)) |> visible())
     end
 
     test "returns to individual fund view when specified on cancel", %{conn: conn, fund: fund} do
-      conn
+      :phoenix
+      |> start_session(conn: conn)
       |> visit(~p"/funds/#{fund}/edit?return_to=show")
-      |> click_link("Cancel")
-      |> assert_has(heading(), text: fund)
+      |> click(by_role(:link, name: "Cancel"))
+      |> expect(heading() |> by_css() |> filter(has_text: html_text(fund)) |> visible())
     end
   end
 end

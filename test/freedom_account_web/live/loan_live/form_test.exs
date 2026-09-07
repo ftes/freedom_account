@@ -12,32 +12,34 @@ defmodule FreedomAccountWeb.LoanLive.FormTest do
     test "saves new loan", %{conn: conn} do
       %{icon: icon, name: name} = Factory.loan_attrs()
 
-      conn
+      :phoenix
+      |> start_session(conn: conn)
       |> visit(~p"/loans/new")
-      |> assert_has(page_title(), text: "Add Loan")
-      |> assert_has(heading(), text: "Add Loan")
-      |> fill_in("Icon", with: "")
-      |> fill_in("Name", with: "")
-      |> assert_has(field_error("#loan_icon"), text: "can't be blank")
-      |> assert_has(field_error("#loan_name"), text: "can't be blank")
-      |> fill_in("Icon", with: icon)
-      |> fill_in("Name", with: name)
-      |> click_button("Save Loan")
-      |> assert_has(flash(:info), text: "Loan created successfully")
-      |> assert_has(loan_icon(), text: icon)
-      |> assert_has(loan_name(), text: name)
-      |> assert_has(loan_balance(), text: "$0.00")
+      |> expect(page_title_contains("Add Loan"))
+      |> expect(heading() |> by_css() |> filter(has_text: html_text("Add Loan")) |> visible())
+      |> fill(by_label("Icon", exact: true), to_string(""))
+      |> fill(by_label("Name", exact: true), to_string(""))
+      |> expect("#loan_icon" |> field_error() |> by_css() |> filter(has_text: html_text("can't be blank")) |> visible())
+      |> expect("#loan_name" |> field_error() |> by_css() |> filter(has_text: html_text("can't be blank")) |> visible())
+      |> fill(by_label("Icon", exact: true), to_string(icon))
+      |> fill(by_label("Name", exact: true), to_string(name))
+      |> click(by_role(:button, name: "Save Loan"))
+      |> expect(:info |> flash() |> by_css() |> filter(has_text: html_text("Loan created successfully")) |> visible())
+      |> expect(loan_icon() |> by_css() |> filter(has_text: html_text(icon)) |> visible())
+      |> expect(loan_name() |> by_css() |> filter(has_text: html_text(name)) |> visible())
+      |> expect(loan_balance() |> by_css() |> filter(has_text: html_text("$0.00")) |> visible())
     end
 
     test "does not create loan on cancel", %{conn: conn} do
       %{icon: icon, name: name} = Factory.loan_attrs()
 
-      conn
+      :phoenix
+      |> start_session(conn: conn)
       |> visit(~p"/loans/new")
-      |> fill_in("Icon", with: icon)
-      |> fill_in("Name", with: name)
-      |> click_link("Cancel")
-      |> refute_has(loan_name(), text: name)
+      |> fill(by_label("Icon", exact: true), to_string(icon))
+      |> fill(by_label("Name", exact: true), to_string(name))
+      |> click(by_role(:link, name: "Cancel"))
+      |> expect(loan_name() |> by_css() |> filter(has_text: html_text(name)) |> count(0))
     end
   end
 
@@ -46,35 +48,49 @@ defmodule FreedomAccountWeb.LoanLive.FormTest do
       loan = account |> Factory.loan() |> Factory.with_loan_balance()
       %{icon: icon, name: name} = Factory.loan_attrs()
 
-      conn
+      :phoenix
+      |> start_session(conn: conn)
       |> visit(~p"/loans/#{loan}/edit")
-      |> assert_has(page_title(), text: "Edit Loan")
-      |> assert_has(heading(), text: "Edit Loan")
-      |> fill_in("Icon", with: "")
-      |> fill_in("Name", with: "")
-      |> assert_has(field_error("#loan_icon"), text: "can't be blank")
-      |> assert_has(field_error("#loan_name"), text: "can't be blank")
-      |> fill_in("Icon", with: icon)
-      |> fill_in("Name", with: name)
-      |> click_button("Save Loan")
-      |> assert_has(flash(:info), text: "Loan updated successfully")
-      |> assert_has(loan_icon(loan), text: icon)
-      |> assert_has(loan_name(loan), text: name)
-      |> assert_has(loan_balance(loan), text: MoneyUtils.format(loan.current_balance))
+      |> expect(page_title_contains("Edit Loan"))
+      |> expect(heading() |> by_css() |> filter(has_text: html_text("Edit Loan")) |> visible())
+      |> fill(by_label("Icon", exact: true), to_string(""))
+      |> fill(by_label("Name", exact: true), to_string(""))
+      |> expect("#loan_icon" |> field_error() |> by_css() |> filter(has_text: html_text("can't be blank")) |> visible())
+      |> expect("#loan_name" |> field_error() |> by_css() |> filter(has_text: html_text("can't be blank")) |> visible())
+      |> fill(by_label("Icon", exact: true), to_string(icon))
+      |> fill(by_label("Name", exact: true), to_string(name))
+      |> click(by_role(:button, name: "Save Loan"))
+      |> expect(:info |> flash() |> by_css() |> filter(has_text: html_text("Loan updated successfully")) |> visible())
+      |> expect(loan |> loan_icon() |> by_css() |> filter(has_text: html_text(icon)) |> visible())
+      |> expect(loan |> loan_name() |> by_css() |> filter(has_text: html_text(name)) |> visible())
+      |> expect(
+        loan
+        |> loan_balance()
+        |> by_css()
+        |> filter(has_text: html_text(MoneyUtils.format(loan.current_balance)))
+        |> visible()
+      )
     end
 
     test "does not update loan settings on cancel", %{account: account, conn: conn} do
       loan = account |> Factory.loan() |> Factory.with_loan_balance()
       %{icon: icon, name: name} = Factory.loan_attrs()
 
-      conn
+      :phoenix
+      |> start_session(conn: conn)
       |> visit(~p"/loans/#{loan}/edit")
-      |> fill_in("Icon", with: icon)
-      |> fill_in("Name", with: name)
-      |> click_link("Cancel")
-      |> assert_has(loan_icon(loan), text: loan.icon)
-      |> assert_has(loan_name(loan), text: loan.name)
-      |> assert_has(loan_balance(loan), text: MoneyUtils.format(loan.current_balance))
+      |> fill(by_label("Icon", exact: true), to_string(icon))
+      |> fill(by_label("Name", exact: true), to_string(name))
+      |> click(by_role(:link, name: "Cancel"))
+      |> expect(loan |> loan_icon() |> by_css() |> filter(has_text: html_text(loan.icon)) |> visible())
+      |> expect(loan |> loan_name() |> by_css() |> filter(has_text: html_text(loan.name)) |> visible())
+      |> expect(
+        loan
+        |> loan_balance()
+        |> by_css()
+        |> filter(has_text: html_text(MoneyUtils.format(loan.current_balance)))
+        |> visible()
+      )
     end
   end
 
@@ -82,45 +98,51 @@ defmodule FreedomAccountWeb.LoanLive.FormTest do
     setup :create_loan
 
     test "returns to loan list by default on save", %{conn: conn, loan: loan} do
-      conn
+      :phoenix
+      |> start_session(conn: conn)
       |> visit(~p"/loans/#{loan}/edit")
-      |> click_button("Save Loan")
-      |> assert_has(active_tab(), text: "Loans")
+      |> click(by_role(:button, name: "Save Loan"))
+      |> expect(active_tab() |> by_css() |> filter(has_text: html_text("Loans")) |> visible())
     end
 
     test "returns to loan list by default on cancel", %{conn: conn, loan: loan} do
-      conn
+      :phoenix
+      |> start_session(conn: conn)
       |> visit(~p"/loans/#{loan}/edit")
-      |> click_link("Cancel")
-      |> assert_has(active_tab(), text: "Loans")
+      |> click(by_role(:link, name: "Cancel"))
+      |> expect(active_tab() |> by_css() |> filter(has_text: html_text("Loans")) |> visible())
     end
 
     test "returns to loan list when specified on save", %{conn: conn, loan: loan} do
-      conn
+      :phoenix
+      |> start_session(conn: conn)
       |> visit(~p"/loans/#{loan}/edit?return_to=index")
-      |> click_button("Save Loan")
-      |> assert_has(active_tab(), text: "Loans")
+      |> click(by_role(:button, name: "Save Loan"))
+      |> expect(active_tab() |> by_css() |> filter(has_text: html_text("Loans")) |> visible())
     end
 
     test "returns to loan list when specified on cancel", %{conn: conn, loan: loan} do
-      conn
+      :phoenix
+      |> start_session(conn: conn)
       |> visit(~p"/loans/#{loan}/edit?return_to=index")
-      |> click_link("Cancel")
-      |> assert_has(active_tab(), text: "Loans")
+      |> click(by_role(:link, name: "Cancel"))
+      |> expect(active_tab() |> by_css() |> filter(has_text: html_text("Loans")) |> visible())
     end
 
     test "returns to individual loan view when specified on save", %{conn: conn, loan: loan} do
-      conn
+      :phoenix
+      |> start_session(conn: conn)
       |> visit(~p"/loans/#{loan}/edit?return_to=show")
-      |> click_button("Save Loan")
-      |> assert_has(heading(), text: loan)
+      |> click(by_role(:button, name: "Save Loan"))
+      |> expect(heading() |> by_css() |> filter(has_text: html_text(loan)) |> visible())
     end
 
     test "returns to individual loan view when specified on cancel", %{conn: conn, loan: loan} do
-      conn
+      :phoenix
+      |> start_session(conn: conn)
       |> visit(~p"/loans/#{loan}/edit?return_to=show")
-      |> click_link("Cancel")
-      |> assert_has(heading(), text: loan)
+      |> click(by_role(:link, name: "Cancel"))
+      |> expect(heading() |> by_css() |> filter(has_text: html_text(loan)) |> visible())
     end
   end
 end

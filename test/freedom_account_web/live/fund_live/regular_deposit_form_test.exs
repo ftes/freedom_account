@@ -15,33 +15,71 @@ defmodule FreedomAccountWeb.FundLive.RegularDepositFormTest do
       [fund1, fund2, fund3] = funds
       [balance1, balance2, balance3] = Enum.map(funds, &expected_balance(&1, account))
 
-      conn
+      :phoenix
+      |> start_session(conn: conn)
       |> visit(~p"/funds/regular_deposit")
-      |> assert_has(page_title(), text: "Regular Deposit")
-      |> assert_has(heading(), text: "Regular Deposit")
-      |> assert_has(field_value("#inputs_date", "#{LocalTime.today()}"))
-      |> fill_in("Date", with: "")
-      |> assert_has(field_error("#inputs_date"), text: "can't be blank")
-      |> fill_in("Date", with: Factory.date())
-      |> click_button("Make Deposit")
-      |> assert_has(flash(:info), text: "Regular deposit successful")
-      |> assert_has(active_tab(), text: "Funds")
-      |> assert_has(fund_balance(fund1), text: MoneyUtils.format(balance1))
-      |> assert_has(fund_balance(fund2), text: MoneyUtils.format(balance2))
-      |> assert_has(fund_balance(fund3), text: MoneyUtils.format(balance3))
+      |> expect(page_title_contains("Regular Deposit"))
+      |> expect(heading() |> by_css() |> filter(has_text: html_text("Regular Deposit")) |> visible())
+      |> expect(visible(by_css(field_value("#inputs_date", "#{LocalTime.today()}"))))
+      |> fill(by_label("Date", exact: true), to_string(""))
+      |> expect("#inputs_date" |> field_error() |> by_css() |> filter(has_text: html_text("can't be blank")) |> visible())
+      |> fill(by_label("Date", exact: true), to_string(Factory.date()))
+      |> click(by_role(:button, name: "Make Deposit"))
+      |> expect(:info |> flash() |> by_css() |> filter(has_text: html_text("Regular deposit successful")) |> visible())
+      |> expect(active_tab() |> by_css() |> filter(has_text: html_text("Funds")) |> visible())
+      |> expect(
+        fund1
+        |> fund_balance()
+        |> by_css()
+        |> filter(has_text: html_text(MoneyUtils.format(balance1)))
+        |> visible()
+      )
+      |> expect(
+        fund2
+        |> fund_balance()
+        |> by_css()
+        |> filter(has_text: html_text(MoneyUtils.format(balance2)))
+        |> visible()
+      )
+      |> expect(
+        fund3
+        |> fund_balance()
+        |> by_css()
+        |> filter(has_text: html_text(MoneyUtils.format(balance3)))
+        |> visible()
+      )
     end
 
     test "does not make deposit on cancel", %{conn: conn, funds: funds} do
       [fund1, fund2, fund3] = funds
 
-      conn
+      :phoenix
+      |> start_session(conn: conn)
       |> visit(~p"/funds/regular_deposit")
-      |> fill_in("Date", with: Factory.date())
-      |> click_link("Cancel")
-      |> assert_has(active_tab(), text: "Funds")
-      |> assert_has(fund_balance(fund1), text: MoneyUtils.format(fund1.current_balance))
-      |> assert_has(fund_balance(fund2), text: MoneyUtils.format(fund2.current_balance))
-      |> assert_has(fund_balance(fund3), text: MoneyUtils.format(fund3.current_balance))
+      |> fill(by_label("Date", exact: true), to_string(Factory.date()))
+      |> click(by_role(:link, name: "Cancel"))
+      |> expect(active_tab() |> by_css() |> filter(has_text: html_text("Funds")) |> visible())
+      |> expect(
+        fund1
+        |> fund_balance()
+        |> by_css()
+        |> filter(has_text: html_text(MoneyUtils.format(fund1.current_balance)))
+        |> visible()
+      )
+      |> expect(
+        fund2
+        |> fund_balance()
+        |> by_css()
+        |> filter(has_text: html_text(MoneyUtils.format(fund2.current_balance)))
+        |> visible()
+      )
+      |> expect(
+        fund3
+        |> fund_balance()
+        |> by_css()
+        |> filter(has_text: html_text(MoneyUtils.format(fund3.current_balance)))
+        |> visible()
+      )
     end
   end
 

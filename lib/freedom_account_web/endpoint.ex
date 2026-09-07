@@ -11,9 +11,22 @@ defmodule FreedomAccountWeb.Endpoint do
     same_site: "Lax"
   ]
 
+  @sql_sandbox Application.compile_env(:freedom_account, :sql_sandbox, false)
+  @live_connect_info (if @sql_sandbox do
+                        [Cerberus.Sandbox.connect_info(), session: @session_options]
+                      else
+                        [session: @session_options]
+                      end)
+
   socket "/live", Phoenix.LiveView.Socket,
-    websocket: [connect_info: [session: @session_options]],
-    longpoll: [connect_info: [session: @session_options]]
+    websocket: [connect_info: @live_connect_info],
+    longpoll: [connect_info: @live_connect_info]
+
+  if @sql_sandbox do
+    plug Phoenix.Ecto.SQL.Sandbox,
+      header: Cerberus.Sandbox.header(),
+      sandbox: Cerberus.Sandbox.allowance()
+  end
 
   # Serve at "/" the static files from "priv/static" directory.
   #

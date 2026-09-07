@@ -28,87 +28,96 @@ defmodule FreedomAccountWeb.SidebarTest do
     test "displays both funds and loans on fund show page", %{conn: conn, funds: funds} do
       fund = hd(funds)
 
-      conn
+      :phoenix
+      |> start_session(conn: conn)
       |> visit(~p"/funds/#{fund}")
-      |> assert_has(heading(), text: "Funds")
-      |> assert_has(heading(), text: "Loans")
+      |> expect(heading() |> by_css() |> filter(has_text: html_text("Funds")) |> visible())
+      |> expect(heading() |> by_css() |> filter(has_text: html_text("Loans")) |> visible())
     end
 
     test "displays both funds and loans on loan show page", %{conn: conn, loans: loans} do
       loan = hd(loans)
 
-      conn
+      :phoenix
+      |> start_session(conn: conn)
       |> visit(~p"/loans/#{loan}")
-      |> assert_has(heading(), text: "Funds")
-      |> assert_has(heading(), text: "Loans")
+      |> expect(heading() |> by_css() |> filter(has_text: html_text("Funds")) |> visible())
+      |> expect(heading() |> by_css() |> filter(has_text: html_text("Loans")) |> visible())
     end
 
     test "displays simple list of funds", %{conn: conn, funds: funds} do
       [fund1, fund2, fund3] = funds
 
-      conn
+      :phoenix
+      |> start_session(conn: conn)
       |> visit(~p"/funds/#{fund1}")
-      |> assert_has(heading(), text: "Funds")
-      |> assert_has(link(), text: fund1)
-      |> assert_has(link(), text: fund2)
-      |> assert_has(link(), text: fund3)
+      |> expect(heading() |> by_css() |> filter(has_text: html_text("Funds")) |> visible())
+      |> expect(link() |> by_css() |> filter(has_text: html_text(fund1)) |> visible())
+      |> expect(link() |> by_css() |> filter(has_text: html_text(fund2)) |> visible())
+      |> expect(link() |> by_css() |> filter(has_text: html_text(fund3)) |> visible())
     end
 
     test "navigates to other funds", %{conn: conn, funds: funds} do
       [fund1, fund2, _rest] = funds
 
-      conn
+      :phoenix
+      |> start_session(conn: conn)
       |> visit(~p"/funds/#{fund1}")
-      |> click_link(fund2.name)
-      |> assert_has(heading(), text: fund2)
+      |> click(by_role(:link, name: fund2.name))
+      |> expect(heading() |> by_css() |> filter(has_text: html_text(fund2)) |> visible())
     end
 
     test "returns to fund list when header clicked", %{conn: conn, funds: funds} do
       fund = hd(funds)
 
-      conn
+      :phoenix
+      |> start_session(conn: conn)
       |> visit(~p"/funds/#{fund}")
-      |> click_link(heading_link(), "Funds")
-      |> assert_path(~p"/funds")
+      |> click(heading_link() |> by_css() |> filter(has_text: html_text("Funds")))
+      |> expect(Expect.url(~p"/funds"))
     end
 
     test "displays simple list of loans", %{conn: conn, loans: loans} do
       [loan1, loan2, loan3] = loans
 
-      conn
+      :phoenix
+      |> start_session(conn: conn)
       |> visit(~p"/loans/#{loan1}")
-      |> assert_has(heading(), text: "Loans")
-      |> assert_has(link(), text: loan1)
-      |> assert_has(link(), text: loan2)
-      |> assert_has(link(), text: loan3)
+      |> expect(heading() |> by_css() |> filter(has_text: html_text("Loans")) |> visible())
+      |> expect(link() |> by_css() |> filter(has_text: html_text(loan1)) |> visible())
+      |> expect(link() |> by_css() |> filter(has_text: html_text(loan2)) |> visible())
+      |> expect(link() |> by_css() |> filter(has_text: html_text(loan3)) |> visible())
     end
 
     test "navigates to other loans", %{conn: conn, loans: loans} do
       [loan1, loan2, _rest] = loans
 
-      conn
+      :phoenix
+      |> start_session(conn: conn)
       |> visit(~p"/loans/#{loan1}")
-      |> click_link(loan2.name)
-      |> assert_has(heading(), text: loan2)
+      |> click(by_role(:link, name: loan2.name))
+      |> expect(heading() |> by_css() |> filter(has_text: html_text(loan2)) |> visible())
     end
 
     test "returns to loan list when header clicked", %{conn: conn, loans: loans} do
       loan = hd(loans)
 
-      conn
+      :phoenix
+      |> start_session(conn: conn)
       |> visit(~p"/loans/#{loan}")
-      |> click_link(heading_link(), "Loans")
-      |> assert_path(~p"/loans")
+      |> click(heading_link() |> by_css() |> filter(has_text: html_text("Loans")))
+      |> expect(Expect.url(~p"/loans"))
     end
 
     test "displays balances in headers", %{conn: conn, funds: funds, loans: loans} do
       funds_balance = funds |> Enum.map(& &1.current_balance) |> MoneyUtils.sum()
       loans_balance = loans |> Enum.map(& &1.current_balance) |> MoneyUtils.sum()
 
-      conn
+      :phoenix
+      |> start_session(conn: conn)
       |> visit(~p"/funds/#{hd(funds)}")
-      |> assert_has(heading(), text: MoneyUtils.format(funds_balance))
-      |> assert_has(heading(), text: MoneyUtils.format(loans_balance))
+      |> expect(heading() |> by_css() |> filter(has_text: html_text(MoneyUtils.format(funds_balance))) |> visible())
+      |> expect(heading() |> by_css() |> filter(has_text: html_text(MoneyUtils.format(loans_balance))) |> visible())
     end
   end
 end

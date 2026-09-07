@@ -22,22 +22,34 @@ defmodule FreedomAccountWeb.LoanLive.PaymentFormTest do
 
       Factory.lend(loan, amount: loan_amount)
 
-      conn
+      :phoenix
+      |> start_session(conn: conn)
       |> visit(~p"/loans/#{loan}/payments/new")
-      |> assert_has(page_title(), text: "Payment")
-      |> assert_has(heading(), text: "Payment")
-      |> fill_in("Date", with: date)
-      |> fill_in("Memo", with: memo)
-      |> fill_in("Amount", with: amount)
-      |> click_button("Receive Payment")
-      |> assert_has(flash(:info), text: "Payment successful")
-      |> assert_has(heading(), text: loan)
-      |> assert_has(heading(), text: MoneyUtils.format(balance))
-      |> assert_has(account_balance(), text: MoneyUtils.format(account_balance))
-      |> assert_has(sidebar_loan_balance(loan), text: MoneyUtils.format(balance))
-      |> assert_has(table_cell(), text: "#{date}")
-      |> assert_has(table_cell(), text: memo)
-      |> assert_has(role("payment"), text: MoneyUtils.format(amount))
+      |> expect(page_title_contains("Payment"))
+      |> expect(heading() |> by_css() |> filter(has_text: html_text("Payment")) |> visible())
+      |> fill(by_label("Date", exact: true), to_string(date))
+      |> fill(by_label("Memo", exact: true), to_string(memo))
+      |> fill(by_label("Amount", exact: true), to_string(amount))
+      |> click(by_role(:button, name: "Receive Payment"))
+      |> expect(:info |> flash() |> by_css() |> filter(has_text: html_text("Payment successful")) |> visible())
+      |> expect(heading() |> by_css() |> filter(has_text: html_text(loan)) |> visible())
+      |> expect(heading() |> by_css() |> filter(has_text: html_text(MoneyUtils.format(balance))) |> visible())
+      |> expect(
+        account_balance()
+        |> by_css()
+        |> filter(has_text: html_text(MoneyUtils.format(account_balance)))
+        |> visible()
+      )
+      |> expect(
+        loan
+        |> sidebar_loan_balance()
+        |> by_css()
+        |> filter(has_text: html_text(MoneyUtils.format(balance)))
+        |> visible()
+      )
+      |> expect(table_cell() |> by_css() |> filter(has_text: html_text("#{date}")) |> visible())
+      |> expect(table_cell() |> by_css() |> filter(has_text: html_text(memo)) |> visible())
+      |> expect("payment" |> role() |> by_css() |> filter(has_text: html_text(MoneyUtils.format(amount))) |> visible())
     end
 
     test "does not receive a payment on cancel", %{account: account, conn: conn, loan: loan} do
@@ -51,16 +63,28 @@ defmodule FreedomAccountWeb.LoanLive.PaymentFormTest do
 
       Factory.lend(loan, amount: loan_amount)
 
-      conn
+      :phoenix
+      |> start_session(conn: conn)
       |> visit(~p"/loans/#{loan}/payments/new")
-      |> fill_in("Date", with: date)
-      |> fill_in("Memo", with: memo)
-      |> fill_in("Amount", with: amount)
-      |> click_link("Cancel")
-      |> assert_has(heading(), text: loan)
-      |> assert_has(heading(), text: MoneyUtils.format(balance))
-      |> assert_has(account_balance(), text: MoneyUtils.format(account_balance))
-      |> assert_has(sidebar_loan_balance(loan), text: MoneyUtils.format(balance))
+      |> fill(by_label("Date", exact: true), to_string(date))
+      |> fill(by_label("Memo", exact: true), to_string(memo))
+      |> fill(by_label("Amount", exact: true), to_string(amount))
+      |> click(by_role(:link, name: "Cancel"))
+      |> expect(heading() |> by_css() |> filter(has_text: html_text(loan)) |> visible())
+      |> expect(heading() |> by_css() |> filter(has_text: html_text(MoneyUtils.format(balance))) |> visible())
+      |> expect(
+        account_balance()
+        |> by_css()
+        |> filter(has_text: html_text(MoneyUtils.format(account_balance)))
+        |> visible()
+      )
+      |> expect(
+        loan
+        |> sidebar_loan_balance()
+        |> by_css()
+        |> filter(has_text: html_text(MoneyUtils.format(balance)))
+        |> visible()
+      )
     end
   end
 end

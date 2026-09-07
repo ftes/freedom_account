@@ -34,6 +34,11 @@ defmodule FreedomAccount.DataCase do
   setup context do
     pid = Sandbox.start_owner!(Repo, shared: not context[:async])
     on_exit(fn -> Sandbox.stop_owner(pid) end)
+
+    if context[:cerberus] do
+      :ok = Cerberus.Test.setup(context)
+    end
+
     :ok
   end
 

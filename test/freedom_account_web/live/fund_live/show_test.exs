@@ -7,7 +7,6 @@ defmodule FreedomAccountWeb.FundLive.ShowTest do
 
   alias FreedomAccount.Factory
   alias FreedomAccount.Funds
-  alias Phoenix.HTML.Safe
 
   describe "viewing an individual fund" do
     setup [:create_account, :create_fund]
@@ -15,54 +14,59 @@ defmodule FreedomAccountWeb.FundLive.ShowTest do
     test "drills down to individual fund and back", %{account: account, conn: conn, fund: fund} do
       per_deposit = Funds.regular_deposit_amount(fund, account)
 
-      conn
+      :phoenix
+      |> start_session(conn: conn)
       |> visit(~p"/funds")
-      |> click_link(fund_card(fund), fund.name)
-      |> assert_has(page_title(), text: Safe.to_iodata(fund))
-      |> assert_has(heading(), text: fund)
-      |> assert_has(heading(), text: "$0.00")
-      |> assert_has(fund_subtitle(), text: "#{fund.budget}")
-      |> assert_has(fund_subtitle(), text: "#{fund.times_per_year}")
-      |> assert_has(fund_subtitle(), text: "#{per_deposit}")
-      |> click_link("Back to Funds")
-      |> assert_has(page_title(), text: "Funds")
-      |> assert_has(active_tab(), text: "Funds")
+      |> click(fund |> fund_card() |> by_css() |> filter(has_text: html_text(fund.name)))
+      |> expect(page_title_contains(fund))
+      |> expect(heading() |> by_css() |> filter(has_text: html_text(fund)) |> visible())
+      |> expect(heading() |> by_css() |> filter(has_text: html_text("$0.00")) |> visible())
+      |> expect(fund_subtitle() |> by_css() |> filter(has_text: html_text("#{fund.budget}")) |> visible())
+      |> expect(fund_subtitle() |> by_css() |> filter(has_text: html_text("#{fund.times_per_year}")) |> visible())
+      |> expect(fund_subtitle() |> by_css() |> filter(has_text: html_text("#{per_deposit}")) |> visible())
+      |> click(by_role(:link, name: "Back to Funds"))
+      |> expect(page_title_contains("Funds"))
+      |> expect(active_tab() |> by_css() |> filter(has_text: html_text("Funds")) |> visible())
     end
 
     test "displays fund", %{conn: conn, fund: fund} do
-      conn
+      :phoenix
+      |> start_session(conn: conn)
       |> visit(~p"/funds/#{fund}")
-      |> assert_has(heading(), text: fund)
+      |> expect(heading() |> by_css() |> filter(has_text: html_text(fund)) |> visible())
     end
 
     test "allows editing fund", %{conn: conn, fund: fund} do
-      conn
+      :phoenix
+      |> start_session(conn: conn)
       |> visit(~p"/funds/#{fund}")
-      |> click_link("Edit Details")
-      |> assert_path(~p"/funds/#{fund}/edit")
-      |> click_link("Cancel")
-      |> assert_has(heading(), text: fund)
+      |> click(by_role(:link, name: "Edit Details"))
+      |> expect(Expect.url(~r{/funds/#{fund.id}/edit(?:\?.*)?$}))
+      |> click(by_role(:link, name: "Cancel"))
+      |> expect(heading() |> by_css() |> filter(has_text: html_text(fund)) |> visible())
     end
 
     test "allows depositing money to a fund", %{conn: conn, fund: fund} do
-      conn
+      :phoenix
+      |> start_session(conn: conn)
       |> visit(~p"/funds/#{fund}")
-      |> click_link("Deposit")
-      |> assert_path(~p"/funds/#{fund}/deposits/new")
-      |> click_link("Cancel")
-      |> assert_has(heading(), text: fund)
+      |> click(by_role(:link, name: "Deposit"))
+      |> expect(Expect.url(~p"/funds/#{fund}/deposits/new"))
+      |> click(by_role(:link, name: "Cancel"))
+      |> expect(heading() |> by_css() |> filter(has_text: html_text(fund)) |> visible())
     end
 
     test "allows withdrawing money from a fund", %{conn: conn, fund: fund} do
       Factory.deposit(fund, amount: ~M[5000]usd)
 
-      conn
+      :phoenix
+      |> start_session(conn: conn)
       |> visit(~p"/funds/#{fund}")
-      |> click_link("Withdraw")
-      |> refute_has(flash(:error))
-      |> assert_path(~p"/funds/#{fund}/withdrawals/new")
-      |> click_link("Cancel")
-      |> assert_has(heading(), text: fund)
+      |> click(by_role(:link, name: "Withdraw"))
+      |> expect(count(by_css(flash(:error)), 0))
+      |> expect(Expect.url(~p"/funds/#{fund}/withdrawals/new"))
+      |> click(by_role(:link, name: "Cancel"))
+      |> expect(heading() |> by_css() |> filter(has_text: html_text(fund)) |> visible())
     end
   end
 end

@@ -17,22 +17,34 @@ defmodule FreedomAccountWeb.LoanLive.LoanFormTest do
       balance = Money.negate!(amount)
       account_balance = Money.sub!(fund.current_balance, amount)
 
-      conn
+      :phoenix
+      |> start_session(conn: conn)
       |> visit(~p"/loans/#{loan}/loans/new")
-      |> assert_has(page_title(), text: "Lend")
-      |> assert_has(heading(), text: "Lend")
-      |> fill_in("Date", with: date)
-      |> fill_in("Memo", with: memo)
-      |> fill_in("Amount", with: amount)
-      |> click_button("Lend Money")
-      |> assert_has(flash(:info), text: "Money lent successfully")
-      |> assert_has(heading(), text: loan)
-      |> assert_has(heading(), text: MoneyUtils.format(balance))
-      |> assert_has(account_balance(), text: MoneyUtils.format(account_balance))
-      |> assert_has(sidebar_loan_balance(loan), text: MoneyUtils.format(balance))
-      |> assert_has(table_cell(), text: "#{date}")
-      |> assert_has(table_cell(), text: memo)
-      |> assert_has(role("loan"), text: MoneyUtils.format(amount))
+      |> expect(page_title_contains("Lend"))
+      |> expect(heading() |> by_css() |> filter(has_text: html_text("Lend")) |> visible())
+      |> fill(by_label("Date", exact: true), to_string(date))
+      |> fill(by_label("Memo", exact: true), to_string(memo))
+      |> fill(by_label("Amount", exact: true), to_string(amount))
+      |> click(by_role(:button, name: "Lend Money"))
+      |> expect(:info |> flash() |> by_css() |> filter(has_text: html_text("Money lent successfully")) |> visible())
+      |> expect(heading() |> by_css() |> filter(has_text: html_text(loan)) |> visible())
+      |> expect(heading() |> by_css() |> filter(has_text: html_text(MoneyUtils.format(balance))) |> visible())
+      |> expect(
+        account_balance()
+        |> by_css()
+        |> filter(has_text: html_text(MoneyUtils.format(account_balance)))
+        |> visible()
+      )
+      |> expect(
+        loan
+        |> sidebar_loan_balance()
+        |> by_css()
+        |> filter(has_text: html_text(MoneyUtils.format(balance)))
+        |> visible()
+      )
+      |> expect(table_cell() |> by_css() |> filter(has_text: html_text("#{date}")) |> visible())
+      |> expect(table_cell() |> by_css() |> filter(has_text: html_text(memo)) |> visible())
+      |> expect("loan" |> role() |> by_css() |> filter(has_text: html_text(MoneyUtils.format(amount))) |> visible())
     end
 
     test "does not record loan on cancel", %{account: account, conn: conn, loan: loan} do
@@ -41,16 +53,33 @@ defmodule FreedomAccountWeb.LoanLive.LoanFormTest do
       memo = Factory.memo()
       amount = Factory.money()
 
-      conn
+      :phoenix
+      |> start_session(conn: conn)
       |> visit(~p"/loans/#{loan}/loans/new")
-      |> fill_in("Date", with: date)
-      |> fill_in("Memo", with: memo)
-      |> fill_in("Amount", with: amount)
-      |> click_link("Cancel")
-      |> assert_has(heading(), text: loan)
-      |> assert_has(heading(), text: :usd |> Money.zero() |> MoneyUtils.format())
-      |> assert_has(heading(), text: MoneyUtils.format(fund.current_balance))
-      |> assert_has(sidebar_loan_balance(loan), text: :usd |> Money.zero() |> MoneyUtils.format())
+      |> fill(by_label("Date", exact: true), to_string(date))
+      |> fill(by_label("Memo", exact: true), to_string(memo))
+      |> fill(by_label("Amount", exact: true), to_string(amount))
+      |> click(by_role(:link, name: "Cancel"))
+      |> expect(heading() |> by_css() |> filter(has_text: html_text(loan)) |> visible())
+      |> expect(
+        heading()
+        |> by_css()
+        |> filter(has_text: :usd |> Money.zero() |> MoneyUtils.format() |> html_text())
+        |> visible()
+      )
+      |> expect(
+        heading()
+        |> by_css()
+        |> filter(has_text: html_text(MoneyUtils.format(fund.current_balance)))
+        |> visible()
+      )
+      |> expect(
+        loan
+        |> sidebar_loan_balance()
+        |> by_css()
+        |> filter(has_text: :usd |> Money.zero() |> MoneyUtils.format() |> html_text())
+        |> visible()
+      )
     end
   end
 end

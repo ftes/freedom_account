@@ -15,69 +15,92 @@ defmodule FreedomAccountWeb.LoanLive.IndexTest do
       Factory.lend(loan)
       {:ok, loan} = Loans.with_updated_balance(loan)
 
-      conn
+      :phoenix
+      |> start_session(conn: conn)
       |> visit(~p"/loans")
-      |> assert_has(page_title(), text: "Loans")
-      |> assert_has(active_tab(), text: "Loans")
-      |> assert_has(loan_icon(loan), text: loan.icon)
-      |> assert_has(loan_name(loan), text: loan.name)
-      |> assert_has(loan_balance(loan), text: MoneyUtils.format(loan.current_balance))
+      |> expect(page_title_contains("Loans"))
+      |> expect(active_tab() |> by_css() |> filter(has_text: html_text("Loans")) |> visible())
+      |> expect(loan |> loan_icon() |> by_css() |> filter(has_text: html_text(loan.icon)) |> visible())
+      |> expect(loan |> loan_name() |> by_css() |> filter(has_text: html_text(loan.name)) |> visible())
+      |> expect(
+        loan
+        |> loan_balance()
+        |> by_css()
+        |> filter(has_text: html_text(MoneyUtils.format(loan.current_balance)))
+        |> visible()
+      )
     end
 
     test "shows prompt when list is empty", %{conn: conn} do
-      conn
+      :phoenix
+      |> start_session(conn: conn)
       |> visit(~p"/loans")
-      |> assert_has(active_tab(), text: "Loans")
-      |> assert_has("#no-loans", text: "This account has no active loans. Use the Add Loan button to add one.")
+      |> expect(active_tab() |> by_css() |> filter(has_text: html_text("Loans")) |> visible())
+      |> expect(
+        "#no-loans"
+        |> by_css()
+        |> filter(has_text: html_text("This account has no active loans. Use the Add Loan button to add one."))
+        |> visible()
+      )
     end
 
     test "shows total loans balance", %{account: account, conn: conn} do
       loan = account |> Factory.loan() |> Factory.with_loan_balance()
       _fund = account |> Factory.fund() |> Factory.with_fund_balance()
 
-      conn
+      :phoenix
+      |> start_session(conn: conn)
       |> visit(~p"/loans")
-      |> assert_has(active_tab(), text: MoneyUtils.format(loan.current_balance))
+      |> expect(
+        active_tab()
+        |> by_css()
+        |> filter(has_text: html_text(MoneyUtils.format(loan.current_balance)))
+        |> visible()
+      )
     end
 
     test "allows creating a new loan from the listing", %{conn: conn} do
-      conn
+      :phoenix
+      |> start_session(conn: conn)
       |> visit(~p"/loans")
-      |> click_link("Add Loan")
-      |> assert_path(~p"/loans/new")
-      |> click_link("Cancel")
-      |> assert_has(active_tab(), text: "Loans")
+      |> click(by_role(:link, name: "Add Loan"))
+      |> expect(Expect.url(~p"/loans/new"))
+      |> click(by_role(:link, name: "Cancel"))
+      |> expect(active_tab() |> by_css() |> filter(has_text: html_text("Loans")) |> visible())
     end
 
     test "allows editing a loan in listing", %{account: account, conn: conn} do
       loan = account |> Factory.loan() |> Factory.with_loan_balance()
 
-      conn
+      :phoenix
+      |> start_session(conn: conn)
       |> visit(~p"/loans")
-      |> click_link(action_link("#loans-#{loan.id}"), "Edit")
-      |> assert_path(~p"/loans/#{loan}/edit")
-      |> click_link("Cancel")
-      |> assert_has(active_tab(), text: "Loans")
+      |> click("#loans-#{loan.id}" |> action_link() |> by_css() |> filter(has_text: html_text("Edit")))
+      |> expect(Expect.url(~p"/loans/#{loan}/edit"))
+      |> click(by_role(:link, name: "Cancel"))
+      |> expect(active_tab() |> by_css() |> filter(has_text: html_text("Loans")) |> visible())
     end
 
     test "deletes loan in listing", %{account: account, conn: conn} do
       loan = Factory.loan(account)
 
-      conn
+      :phoenix
+      |> start_session(conn: conn)
       |> visit(~p"/loans")
-      |> click_link(action_link("#loans-#{loan.id}"), "Delete")
-      |> refute_has("#loans-#{loan.id}")
+      |> click("#loans-#{loan.id}" |> action_link() |> by_css() |> filter(has_text: html_text("Delete")))
+      |> expect(count(by_css("#loans-#{loan.id}"), 0))
     end
 
     test "allows activating/deactivating loans from listing", %{account: account, conn: conn} do
       _loan = Factory.loan(account)
 
-      conn
+      :phoenix
+      |> start_session(conn: conn)
       |> visit(~p"/loans")
-      |> click_link("Activate/Deactivate")
-      |> assert_path(~p"/loans/activate")
-      |> click_link("Cancel")
-      |> assert_has(active_tab(), text: "Loans")
+      |> click(by_role(:link, name: "Activate/Deactivate"))
+      |> expect(Expect.url(~p"/loans/activate"))
+      |> click(by_role(:link, name: "Cancel"))
+      |> expect(active_tab() |> by_css() |> filter(has_text: html_text("Loans")) |> visible())
     end
   end
 end

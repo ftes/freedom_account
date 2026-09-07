@@ -27,46 +27,72 @@ defmodule FreedomAccountWeb.FundLive.BudgetFormTest do
 
       total = MoneyUtils.sum(amounts)
 
-      conn
+      :phoenix
+      |> start_session(conn: conn)
       |> visit(~p"/funds/budget")
-      |> assert_has(page_title(), text: "Update Budget")
-      |> assert_has(heading(), text: "Update Budget")
-      |> assert_has("label", text: fund0)
-      |> assert_has("label", text: fund1)
-      |> assert_has("label", text: fund2)
-      |> fill_in("Budget 1", with: "")
-      |> fill_in("Times/Year 2", with: "")
-      |> assert_has(field_error("#budget_funds_1_budget"), text: "can't be blank")
-      |> assert_has(field_error("#budget_funds_2_times_per_year"), text: "can't be blank")
-      |> fill_in("Budget 0", with: attrs0[:budget])
-      |> fill_in("Times/Year 0", with: attrs0[:times_per_year])
-      |> assert_has(role("deposit-amount-0"), with: "#{amount1}")
-      |> fill_in("Budget 1", with: attrs1[:budget])
-      |> fill_in("Times/Year 1", with: attrs1[:times_per_year])
-      |> assert_has(role("deposit-amount-1"), with: "#{amount2}")
-      |> fill_in("Budget 2", with: attrs2[:budget])
-      |> fill_in("Times/Year 2", with: attrs2[:times_per_year])
-      |> assert_has(role("deposit-amount-2"), with: "#{amount3}")
-      |> assert_has("#deposit-total", with: "#{total}")
-      |> click_button("Update Budget")
-      |> assert_has(flash(:info), text: "Budget updated successfully")
-      |> assert_has(active_tab(), text: "Funds")
-      |> assert_has(fund_budget(fund1), text: "#{attrs1[:budget]}")
-      |> assert_has(fund_frequency(fund2), text: "#{attrs2[:times_per_year]}")
+      |> expect(page_title_contains("Update Budget"))
+      |> expect(heading() |> by_css() |> filter(has_text: html_text("Update Budget")) |> visible())
+      |> expect("label" |> by_css() |> filter(has_text: html_text(fund0)) |> visible())
+      |> expect("label" |> by_css() |> filter(has_text: html_text(fund1)) |> visible())
+      |> expect("label" |> by_css() |> filter(has_text: html_text(fund2)) |> visible())
+      |> fill(by_label("Budget 1", exact: true), to_string(""))
+      |> fill(by_label("Times/Year 2", exact: true), to_string(""))
+      |> expect(
+        "#budget_funds_1_budget"
+        |> field_error()
+        |> by_css()
+        |> filter(has_text: html_text("can't be blank"))
+        |> visible()
+      )
+      |> expect(
+        "#budget_funds_2_times_per_year"
+        |> field_error()
+        |> by_css()
+        |> filter(has_text: html_text("can't be blank"))
+        |> visible()
+      )
+      |> fill(by_label("Budget 0", exact: true), to_string(attrs0[:budget]))
+      |> fill(by_label("Times/Year 0", exact: true), to_string(attrs0[:times_per_year]))
+      |> expect("deposit-amount-0" |> role() |> by_css() |> filter(has_text: html_text("#{amount1}")) |> visible())
+      |> fill(by_label("Budget 1", exact: true), to_string(attrs1[:budget]))
+      |> fill(by_label("Times/Year 1", exact: true), to_string(attrs1[:times_per_year]))
+      |> expect("deposit-amount-1" |> role() |> by_css() |> filter(has_text: html_text("#{amount2}")) |> visible())
+      |> fill(by_label("Budget 2", exact: true), to_string(attrs2[:budget]))
+      |> fill(by_label("Times/Year 2", exact: true), to_string(attrs2[:times_per_year]))
+      |> expect("deposit-amount-2" |> role() |> by_css() |> filter(has_text: html_text("#{amount3}")) |> visible())
+      |> expect("#deposit-total" |> by_css() |> filter(has_text: html_text("#{total}")) |> visible())
+      |> click(by_role(:button, name: "Update Budget"))
+      |> expect(:info |> flash() |> by_css() |> filter(has_text: html_text("Budget updated successfully")) |> visible())
+      |> expect(active_tab() |> by_css() |> filter(has_text: html_text("Funds")) |> visible())
+      |> expect(fund1 |> fund_budget() |> by_css() |> filter(has_text: html_text("#{attrs1[:budget]}")) |> visible())
+      |> expect(
+        fund2
+        |> fund_frequency()
+        |> by_css()
+        |> filter(has_text: html_text("#{attrs2[:times_per_year]}"))
+        |> visible()
+      )
     end
 
     test "does not update budget on cancel", %{account: account, conn: conn} do
       fund = Factory.fund(account)
       attrs = Factory.fund_attrs()
 
-      conn
+      :phoenix
+      |> start_session(conn: conn)
       |> visit(~p"/funds/budget")
-      |> fill_in("Budget 0", with: attrs[:budget])
-      |> fill_in("Times/Year 0", with: attrs[:times_per_year])
-      |> click_link("Cancel")
-      |> assert_has(active_tab(), text: "Funds")
-      |> assert_has(fund_budget(fund), text: "#{fund.budget}")
-      |> assert_has(fund_frequency(fund), text: "#{fund.times_per_year}")
+      |> fill(by_label("Budget 0", exact: true), to_string(attrs[:budget]))
+      |> fill(by_label("Times/Year 0", exact: true), to_string(attrs[:times_per_year]))
+      |> click(by_role(:link, name: "Cancel"))
+      |> expect(active_tab() |> by_css() |> filter(has_text: html_text("Funds")) |> visible())
+      |> expect(fund |> fund_budget() |> by_css() |> filter(has_text: html_text("#{fund.budget}")) |> visible())
+      |> expect(
+        fund
+        |> fund_frequency()
+        |> by_css()
+        |> filter(has_text: html_text("#{fund.times_per_year}"))
+        |> visible()
+      )
     end
 
     defp regular_deposit_amount({%Fund{} = fund, attrs}, %Account{} = account) do

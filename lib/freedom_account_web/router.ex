@@ -3,6 +3,12 @@ defmodule FreedomAccountWeb.Router do
 
   alias FreedomAccountWeb.Hooks
 
+  @live_mount_hooks (if Application.compile_env(:freedom_account, :sql_sandbox, false) do
+                       [Cerberus.Sandbox, Hooks.LoadInitialData]
+                     else
+                       [Hooks.LoadInitialData]
+                     end)
+
   pipeline :browser do
     plug :accepts, ["html"]
     plug :fetch_session
@@ -21,7 +27,7 @@ defmodule FreedomAccountWeb.Router do
 
     get "/", HomeController, :redirect_to_fund_list
 
-    live_session :default, on_mount: Hooks.LoadInitialData do
+    live_session :default, on_mount: @live_mount_hooks do
       live "/account/edit", AccountLive.Form
 
       live "/funds", FundLive.Index

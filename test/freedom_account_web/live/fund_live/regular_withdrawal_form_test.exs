@@ -21,46 +21,88 @@ defmodule FreedomAccountWeb.FundLive.RegularWithdrawalFormTest do
       total2 = Money.add!(total1, amount2)
       total3 = Money.add!(total2, amount3)
 
-      conn
+      :phoenix
+      |> start_session(conn: conn)
       |> visit(~p"/funds/regular_withdrawal")
-      |> assert_has(page_title(), text: "Regular Withdrawal")
-      |> assert_has(heading(), text: "Regular Withdrawal")
-      |> assert_has("#transaction-total", text: :usd |> Money.zero() |> MoneyUtils.format())
-      |> assert_has("label", text: fund1)
-      |> assert_has("label", text: fund2)
-      |> assert_has("label", text: fund3)
-      |> fill_in("Date", with: "")
-      |> assert_has(field_error("#transaction_date"), text: "can't be blank")
-      |> fill_in("Date", with: Factory.date())
-      |> fill_in("Memo", with: "Cover expenses")
-      |> click_button("Make Withdrawal")
-      |> assert_has("#line-items-error", text: "Requires at least one line item with a non-zero amount")
-      |> fill_in("Amount 0", with: "#{amount1}")
-      |> assert_has("#transaction-total", text: MoneyUtils.format(total1))
-      |> fill_in("Amount 1", with: "#{amount2}")
-      |> assert_has("#transaction-total", text: MoneyUtils.format(total2))
-      |> fill_in("Amount 2", with: "#{amount3}")
-      |> assert_has("#transaction-total", text: MoneyUtils.format(total3))
-      |> click_button("Make Withdrawal")
-      |> assert_has(flash(:info), text: "Withdrawal successful")
-      |> assert_has(active_tab(), text: "Funds")
-      |> assert_has(fund_balance(fund1), text: MoneyUtils.format(balance1))
-      |> assert_has(fund_balance(fund2), text: MoneyUtils.format(balance2))
-      |> assert_has(fund_balance(fund3), text: MoneyUtils.format(balance3))
+      |> expect(page_title_contains("Regular Withdrawal"))
+      |> expect(heading() |> by_css() |> filter(has_text: html_text("Regular Withdrawal")) |> visible())
+      |> expect(
+        "#transaction-total"
+        |> by_css()
+        |> filter(has_text: :usd |> Money.zero() |> MoneyUtils.format() |> html_text())
+        |> visible()
+      )
+      |> expect("label" |> by_css() |> filter(has_text: html_text(fund1)) |> visible())
+      |> expect("label" |> by_css() |> filter(has_text: html_text(fund2)) |> visible())
+      |> expect("label" |> by_css() |> filter(has_text: html_text(fund3)) |> visible())
+      |> fill(by_label("Date", exact: true), to_string(""))
+      |> expect(
+        "#transaction_date"
+        |> field_error()
+        |> by_css()
+        |> filter(has_text: html_text("can't be blank"))
+        |> visible()
+      )
+      |> fill(by_label("Date", exact: true), to_string(Factory.date()))
+      |> fill(by_label("Memo", exact: true), to_string("Cover expenses"))
+      |> click(by_role(:button, name: "Make Withdrawal"))
+      |> expect(
+        "#line-items-error"
+        |> by_css()
+        |> filter(has_text: html_text("Requires at least one line item with a non-zero amount"))
+        |> visible()
+      )
+      |> fill(by_label("Amount 0", exact: true), to_string("#{amount1}"))
+      |> expect("#transaction-total" |> by_css() |> filter(has_text: html_text(MoneyUtils.format(total1))) |> visible())
+      |> fill(by_label("Amount 1", exact: true), to_string("#{amount2}"))
+      |> expect("#transaction-total" |> by_css() |> filter(has_text: html_text(MoneyUtils.format(total2))) |> visible())
+      |> fill(by_label("Amount 2", exact: true), to_string("#{amount3}"))
+      |> expect("#transaction-total" |> by_css() |> filter(has_text: html_text(MoneyUtils.format(total3))) |> visible())
+      |> click(by_role(:button, name: "Make Withdrawal"))
+      |> expect(:info |> flash() |> by_css() |> filter(has_text: html_text("Withdrawal successful")) |> visible())
+      |> expect(active_tab() |> by_css() |> filter(has_text: html_text("Funds")) |> visible())
+      |> expect(
+        fund1
+        |> fund_balance()
+        |> by_css()
+        |> filter(has_text: html_text(MoneyUtils.format(balance1)))
+        |> visible()
+      )
+      |> expect(
+        fund2
+        |> fund_balance()
+        |> by_css()
+        |> filter(has_text: html_text(MoneyUtils.format(balance2)))
+        |> visible()
+      )
+      |> expect(
+        fund3
+        |> fund_balance()
+        |> by_css()
+        |> filter(has_text: html_text(MoneyUtils.format(balance3)))
+        |> visible()
+      )
     end
 
     test "does not make withdrawal on cancel", %{conn: conn, funds: funds} do
       fund1 = hd(funds)
       amount = fund1.current_balance |> Money.mult!(:rand.uniform()) |> Money.round()
 
-      conn
+      :phoenix
+      |> start_session(conn: conn)
       |> visit(~p"/funds/regular_withdrawal")
-      |> fill_in("Date", with: Factory.date())
-      |> fill_in("Memo", with: "Cover expenses")
-      |> fill_in("Amount 0", with: "#{amount}")
-      |> click_link("Cancel")
-      |> assert_has(active_tab(), text: "Funds")
-      |> assert_has(fund_balance(fund1), text: MoneyUtils.format(fund1.current_balance))
+      |> fill(by_label("Date", exact: true), to_string(Factory.date()))
+      |> fill(by_label("Memo", exact: true), to_string("Cover expenses"))
+      |> fill(by_label("Amount 0", exact: true), to_string("#{amount}"))
+      |> click(by_role(:link, name: "Cancel"))
+      |> expect(active_tab() |> by_css() |> filter(has_text: html_text("Funds")) |> visible())
+      |> expect(
+        fund1
+        |> fund_balance()
+        |> by_css()
+        |> filter(has_text: html_text(MoneyUtils.format(fund1.current_balance)))
+        |> visible()
+      )
     end
   end
 

@@ -81,6 +81,7 @@ defmodule FreedomAccount.MixProject do
       {:bandit, "~> 1.10"},
       {:boundary, "~> 0.10.4"},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
+      {:cerberus, path: "/Users/ftes/src/cerberus2", only: :test},
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
       {:dns_cluster, "~> 0.2.0"},
       {:ecto_sql, "~> 3.13"},
@@ -102,7 +103,6 @@ defmodule FreedomAccount.MixProject do
       {:phoenix_live_dashboard, "~> 0.8.7"},
       {:phoenix_live_reload, "~> 1.6", only: :dev},
       {:phoenix_live_view, "~> 1.2"},
-      {:phoenix_test, "~> 0.11.1", only: :test, runtime: false},
       {:phoenix, "~> 1.8"},
       # This is here to resolve a conflict with paginator's dependencies
       {:plug_crypto, "~> 2.1", override: true},

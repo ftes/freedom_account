@@ -16,26 +16,33 @@ defmodule FreedomAccountWeb.FundLive.DepositFormTest do
       amount = Factory.money()
       account_balance = Money.add!(other_fund.current_balance, amount)
 
-      conn
+      :phoenix
+      |> start_session(conn: conn)
       |> visit(~p"/funds/#{fund}/deposits/new")
-      |> assert_has(page_title(), text: "Deposit")
-      |> assert_has(heading(), text: "Deposit")
-      |> assert_has("label", text: fund)
-      |> refute_has("#transaction-total")
-      |> fill_in("Date", with: date)
-      |> fill_in("Memo", with: memo)
-      |> click_button("Make Deposit")
-      |> refute_has("#line-items-error")
-      |> fill_in("Amount 0", with: amount)
-      |> click_button("Make Deposit")
-      |> assert_has(flash(:info), text: "Deposit successful")
-      |> assert_has(heading(), text: fund)
-      |> assert_has(heading(), text: MoneyUtils.format(amount))
-      |> assert_has(heading(), text: MoneyUtils.format(account_balance))
-      |> assert_has(sidebar_fund_balance(fund), text: MoneyUtils.format(amount))
-      |> assert_has(table_cell(), text: "#{date}")
-      |> assert_has(table_cell(), text: memo)
-      |> assert_has(role("deposit"), text: MoneyUtils.format(amount))
+      |> expect(page_title_contains("Deposit"))
+      |> expect(heading() |> by_css() |> filter(has_text: html_text("Deposit")) |> visible())
+      |> expect("label" |> by_css() |> filter(has_text: html_text(fund)) |> visible())
+      |> expect(count(by_css("#transaction-total"), 0))
+      |> fill(by_label("Date", exact: true), to_string(date))
+      |> fill(by_label("Memo", exact: true), to_string(memo))
+      |> click(by_role(:button, name: "Make Deposit"))
+      |> expect(count(by_css("#line-items-error"), 0))
+      |> fill(by_label("Amount 0", exact: true), to_string(amount))
+      |> click(by_role(:button, name: "Make Deposit"))
+      |> expect(:info |> flash() |> by_css() |> filter(has_text: html_text("Deposit successful")) |> visible())
+      |> expect(heading() |> by_css() |> filter(has_text: html_text(fund)) |> visible())
+      |> expect(heading() |> by_css() |> filter(has_text: html_text(MoneyUtils.format(amount))) |> visible())
+      |> expect(heading() |> by_css() |> filter(has_text: html_text(MoneyUtils.format(account_balance))) |> visible())
+      |> expect(
+        fund
+        |> sidebar_fund_balance()
+        |> by_css()
+        |> filter(has_text: html_text(MoneyUtils.format(amount)))
+        |> visible()
+      )
+      |> expect(table_cell() |> by_css() |> filter(has_text: html_text("#{date}")) |> visible())
+      |> expect(table_cell() |> by_css() |> filter(has_text: html_text(memo)) |> visible())
+      |> expect("deposit" |> role() |> by_css() |> filter(has_text: html_text(MoneyUtils.format(amount))) |> visible())
     end
 
     test "does not make deposit on cancel", %{account: account, conn: conn, fund: fund} do
@@ -44,15 +51,26 @@ defmodule FreedomAccountWeb.FundLive.DepositFormTest do
       memo = Factory.memo()
       amount = Factory.money()
 
-      conn
+      :phoenix
+      |> start_session(conn: conn)
       |> visit(~p"/funds/#{fund}/deposits/new")
-      |> fill_in("Date", with: date)
-      |> fill_in("Memo", with: memo)
-      |> fill_in("Amount 0", with: amount)
-      |> click_link("Cancel")
-      |> assert_has(heading(), text: fund)
-      |> assert_has(heading(), text: :usd |> Money.zero() |> MoneyUtils.format())
-      |> assert_has(heading(), text: MoneyUtils.format(other_fund.current_balance))
+      |> fill(by_label("Date", exact: true), to_string(date))
+      |> fill(by_label("Memo", exact: true), to_string(memo))
+      |> fill(by_label("Amount 0", exact: true), to_string(amount))
+      |> click(by_role(:link, name: "Cancel"))
+      |> expect(heading() |> by_css() |> filter(has_text: html_text(fund)) |> visible())
+      |> expect(
+        heading()
+        |> by_css()
+        |> filter(has_text: :usd |> Money.zero() |> MoneyUtils.format() |> html_text())
+        |> visible()
+      )
+      |> expect(
+        heading()
+        |> by_css()
+        |> filter(has_text: html_text(MoneyUtils.format(other_fund.current_balance)))
+        |> visible()
+      )
     end
   end
 end
