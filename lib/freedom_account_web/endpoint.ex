@@ -13,7 +13,7 @@ defmodule FreedomAccountWeb.Endpoint do
 
   @sql_sandbox Application.compile_env(:freedom_account, :sql_sandbox, false)
   @live_connect_info (if @sql_sandbox do
-                        [Cerberus.Sandbox.connect_info(), session: @session_options]
+                        [Fluffy.Sandbox.connect_info(), session: @session_options]
                       else
                         [session: @session_options]
                       end)
@@ -24,8 +24,8 @@ defmodule FreedomAccountWeb.Endpoint do
 
   if @sql_sandbox do
     plug Phoenix.Ecto.SQL.Sandbox,
-      header: Cerberus.Sandbox.header(),
-      sandbox: Cerberus.Sandbox.allowance()
+      header: Fluffy.Sandbox.header(),
+      sandbox: Fluffy.Sandbox.allowance()
   end
 
   # Serve at "/" the static files from "priv/static" directory.

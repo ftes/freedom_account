@@ -74,7 +74,7 @@ defmodule FreedomAccountWeb.SidebarTest do
       |> start_session(conn: conn)
       |> visit(~p"/funds/#{fund}")
       |> click(heading_link() |> by_css() |> filter(has_text: html_text("Funds")))
-      |> expect(Cerberus.Page.to_have_url(~p"/funds"))
+      |> expect(Fluffy.Page.to_have_url(~p"/funds"))
     end
 
     test "displays simple list of loans", %{conn: conn, loans: loans} do
@@ -106,7 +106,7 @@ defmodule FreedomAccountWeb.SidebarTest do
       |> start_session(conn: conn)
       |> visit(~p"/loans/#{loan}")
       |> click(heading_link() |> by_css() |> filter(has_text: html_text("Loans")))
-      |> expect(Cerberus.Page.to_have_url(~p"/loans"))
+      |> expect(Fluffy.Page.to_have_url(~p"/loans"))
     end
 
     test "displays balances in headers", %{conn: conn, funds: funds, loans: loans} do

@@ -31,7 +31,7 @@ defmodule FreedomAccountWeb.LoanLive.ShowTest do
       |> start_session(conn: conn)
       |> visit(~p"/loans/#{loan}")
       |> click(by_role(:link, name: "Edit Details"))
-      |> expect(Cerberus.Page.to_have_url(~r{/loans/#{loan.id}/edit(?:\?.*)?$}))
+      |> expect(Fluffy.Page.to_have_url(~r{/loans/#{loan.id}/edit(?:\?.*)?$}))
       |> click(by_role(:link, name: "Cancel"))
       |> expect(heading() |> by_css() |> filter(has_text: html_text(loan)) |> visible())
     end
@@ -41,7 +41,7 @@ defmodule FreedomAccountWeb.LoanLive.ShowTest do
       |> start_session(conn: conn)
       |> visit(~p"/loans/#{loan}")
       |> click(by_role(:link, name: "Lend"))
-      |> expect(Cerberus.Page.to_have_url(~p"/loans/#{loan}/loans/new"))
+      |> expect(Fluffy.Page.to_have_url(~p"/loans/#{loan}/loans/new"))
       |> click(by_role(:link, name: "Cancel"))
       |> expect(heading() |> by_css() |> filter(has_text: html_text(loan)) |> visible())
     end
@@ -51,7 +51,7 @@ defmodule FreedomAccountWeb.LoanLive.ShowTest do
       |> start_session(conn: conn)
       |> visit(~p"/loans/#{loan}")
       |> click(by_role(:link, name: "Payment"))
-      |> expect(Cerberus.Page.to_have_url(~p"/loans/#{loan}/payments/new"))
+      |> expect(Fluffy.Page.to_have_url(~p"/loans/#{loan}/payments/new"))
       |> click(by_role(:link, name: "Cancel"))
       |> expect(heading() |> by_css() |> filter(has_text: html_text(loan)) |> visible())
     end

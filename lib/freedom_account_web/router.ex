@@ -4,7 +4,7 @@ defmodule FreedomAccountWeb.Router do
   alias FreedomAccountWeb.Hooks
 
   @live_mount_hooks (if Application.compile_env(:freedom_account, :sql_sandbox, false) do
-                       [Cerberus.Sandbox, Hooks.LoadInitialData]
+                       [Fluffy.Sandbox, Hooks.LoadInitialData]
                      else
                        [Hooks.LoadInitialData]
                      end)

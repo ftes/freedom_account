@@ -25,19 +25,19 @@ defmodule FreedomAccountWeb.ConnCase do
       use FreedomAccount.DataCase, unquote(opts)
       use FreedomAccountWeb, :verified_routes
 
-      import Cerberus
-      import Cerberus.Expect, except: [disabled: 1, enabled: 1, url: 1]
-      import Cerberus.Locator
+      import Fluffy
+      import Fluffy.Expect, except: [disabled: 1, enabled: 1, url: 1]
+      import Fluffy.Locator
       import FreedomAccountWeb.ElementSelectors
       import Phoenix.ConnTest
       import Plug.Conn
       import unquote(__MODULE__)
 
-      alias Cerberus.Expect
-      alias Cerberus.Page
+      alias Fluffy.Expect
+      alias Fluffy.Page
 
       @endpoint FreedomAccountWeb.Endpoint
-      @moduletag :cerberus
+      @moduletag :fluffy
     end
   end
 
@@ -54,19 +54,19 @@ defmodule FreedomAccountWeb.ConnCase do
     |> IO.iodata_to_binary()
   end
 
-  @spec exact_label(Safe.t()) :: Cerberus.Locator.t()
+  @spec exact_label(Safe.t()) :: Fluffy.Locator.t()
   def exact_label(value) do
     value
     |> html_text()
-    |> Cerberus.Locator.by_label(exact: true)
+    |> Fluffy.Locator.by_label(exact: true)
   end
 
-  @spec page_title_contains(Safe.t()) :: Cerberus.Expect.t()
+  @spec page_title_contains(Safe.t()) :: Fluffy.Expect.t()
   def page_title_contains(value) do
     value
     |> html_text()
     |> Regex.escape()
     |> Regex.compile!()
-    |> Cerberus.Page.to_have_title()
+    |> Fluffy.Page.to_have_title()
   end
 end

@@ -81,7 +81,7 @@ defmodule FreedomAccount.MixProject do
       {:bandit, "~> 1.10"},
       {:boundary, "~> 0.10.4"},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
-      {:cerberus, path: "/Users/ftes/src/cerberus2", only: :test},
+      {:fluffy, path: System.get_env("FLUFFY_PATH", "../fluffy"), only: :test},
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
       {:dns_cluster, "~> 0.2.0"},
       {:ecto_sql, "~> 3.13"},

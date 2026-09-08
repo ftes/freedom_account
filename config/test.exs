@@ -1,6 +1,6 @@
 import Config
 
-config :cerberus,
+config :fluffy,
   ecto_repos: [FreedomAccount.Repo],
   endpoint: FreedomAccountWeb.Endpoint
 
