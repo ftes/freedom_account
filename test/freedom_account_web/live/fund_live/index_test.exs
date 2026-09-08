@@ -72,7 +72,7 @@ defmodule FreedomAccountWeb.FundLive.IndexTest do
       |> start_session(conn: conn)
       |> visit(~p"/funds")
       |> click(by_role(:link, name: "Add Fund"))
-      |> expect(Expect.url(~p"/funds/new"))
+      |> expect(Cerberus.Page.to_have_url(~p"/funds/new"))
       |> click(by_role(:link, name: "Cancel"))
       |> expect(active_tab() |> by_css() |> filter(has_text: html_text("Funds")) |> visible())
     end
@@ -84,7 +84,7 @@ defmodule FreedomAccountWeb.FundLive.IndexTest do
       |> start_session(conn: conn)
       |> visit(~p"/funds")
       |> click(fund |> fund_action() |> by_css() |> filter(has_text: html_text("Edit")))
-      |> expect(Expect.url(~p"/funds/#{fund}/edit"))
+      |> expect(Cerberus.Page.to_have_url(~p"/funds/#{fund}/edit"))
       |> click(by_role(:link, name: "Cancel"))
       |> expect(active_tab() |> by_css() |> filter(has_text: html_text("Funds")) |> visible())
     end
@@ -106,7 +106,7 @@ defmodule FreedomAccountWeb.FundLive.IndexTest do
       |> start_session(conn: conn)
       |> visit(~p"/funds")
       |> click(by_role(:link, name: "Activate/Deactivate"))
-      |> expect(Expect.url(~p"/funds/activate"))
+      |> expect(Cerberus.Page.to_have_url(~p"/funds/activate"))
       |> click(by_role(:link, name: "Cancel"))
       |> expect(active_tab() |> by_css() |> filter(has_text: html_text("Funds")) |> visible())
     end
@@ -116,7 +116,7 @@ defmodule FreedomAccountWeb.FundLive.IndexTest do
       |> start_session(conn: conn)
       |> visit(~p"/funds")
       |> click(by_role(:link, name: "Regular Deposit"))
-      |> expect(Expect.url(~p"/funds/regular_deposit"))
+      |> expect(Cerberus.Page.to_have_url(~p"/funds/regular_deposit"))
       |> click(by_role(:link, name: "Cancel"))
       |> expect(active_tab() |> by_css() |> filter(has_text: html_text("Funds")) |> visible())
     end
@@ -128,7 +128,7 @@ defmodule FreedomAccountWeb.FundLive.IndexTest do
       |> start_session(conn: conn)
       |> visit(~p"/funds")
       |> click(by_role(:link, name: "Regular Withdrawal"))
-      |> expect(Expect.url(~p"/funds/regular_withdrawal"))
+      |> expect(Cerberus.Page.to_have_url(~p"/funds/regular_withdrawal"))
       |> click(by_role(:link, name: "Cancel"))
       |> expect(active_tab() |> by_css() |> filter(has_text: html_text("Funds")) |> visible())
     end
@@ -140,7 +140,7 @@ defmodule FreedomAccountWeb.FundLive.IndexTest do
       |> start_session(conn: conn)
       |> visit(~p"/funds")
       |> click(by_role(:link, name: "Budget"))
-      |> expect(Expect.url(~p"/funds/budget"))
+      |> expect(Cerberus.Page.to_have_url(~p"/funds/budget"))
       |> click(by_role(:link, name: "Cancel"))
       |> expect(active_tab() |> by_css() |> filter(has_text: html_text("Funds")) |> visible())
     end

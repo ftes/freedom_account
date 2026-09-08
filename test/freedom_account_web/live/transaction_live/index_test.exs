@@ -96,7 +96,7 @@ defmodule FreedomAccountWeb.TransactionLive.IndexTest do
       |> start_session(conn: conn)
       |> visit(~p"/transactions")
       |> click("#txn-fund-#{deposit.id} td" |> by_css() |> filter(has_text: html_text(deposit.memo)))
-      |> expect(Expect.url(~p"/transactions/#{deposit}/edit?type=fund"))
+      |> expect(Cerberus.Page.to_have_url(~p"/transactions/#{deposit}/edit?type=fund"))
       |> click(by_role(:link, name: "Cancel"))
       |> expect(active_tab() |> by_css() |> filter(has_text: html_text("Transactions")) |> visible())
     end
@@ -108,7 +108,7 @@ defmodule FreedomAccountWeb.TransactionLive.IndexTest do
       |> start_session(conn: conn)
       |> visit(~p"/transactions")
       |> click("#txn-loan-#{transaction.id} td" |> by_css() |> filter(has_text: html_text(transaction.memo)))
-      |> expect(Expect.url(~p"/transactions/#{transaction}/edit?type=loan"))
+      |> expect(Cerberus.Page.to_have_url(~p"/transactions/#{transaction}/edit?type=loan"))
       |> click(by_role(:link, name: "Cancel"))
       |> expect(active_tab() |> by_css() |> filter(has_text: html_text("Transactions")) |> visible())
     end

@@ -87,7 +87,7 @@ defmodule FreedomAccountWeb.FundTransactionListTest do
       |> start_session(conn: conn)
       |> visit(~p"/funds/#{fund}")
       |> click("#txn-#{line_item.id} td" |> by_css() |> filter(has_text: html_text(deposit.memo)))
-      |> expect(Expect.url(~p"/funds/#{fund}/transactions/#{deposit}/edit"))
+      |> expect(Cerberus.Page.to_have_url(~p"/funds/#{fund}/transactions/#{deposit}/edit"))
       |> click(by_role(:link, name: "Cancel"))
       |> expect(heading() |> by_css() |> filter(has_text: html_text(fund)) |> visible())
     end

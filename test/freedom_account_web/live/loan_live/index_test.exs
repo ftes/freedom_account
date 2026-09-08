@@ -64,7 +64,7 @@ defmodule FreedomAccountWeb.LoanLive.IndexTest do
       |> start_session(conn: conn)
       |> visit(~p"/loans")
       |> click(by_role(:link, name: "Add Loan"))
-      |> expect(Expect.url(~p"/loans/new"))
+      |> expect(Cerberus.Page.to_have_url(~p"/loans/new"))
       |> click(by_role(:link, name: "Cancel"))
       |> expect(active_tab() |> by_css() |> filter(has_text: html_text("Loans")) |> visible())
     end
@@ -76,7 +76,7 @@ defmodule FreedomAccountWeb.LoanLive.IndexTest do
       |> start_session(conn: conn)
       |> visit(~p"/loans")
       |> click("#loans-#{loan.id}" |> action_link() |> by_css() |> filter(has_text: html_text("Edit")))
-      |> expect(Expect.url(~p"/loans/#{loan}/edit"))
+      |> expect(Cerberus.Page.to_have_url(~p"/loans/#{loan}/edit"))
       |> click(by_role(:link, name: "Cancel"))
       |> expect(active_tab() |> by_css() |> filter(has_text: html_text("Loans")) |> visible())
     end
@@ -98,7 +98,7 @@ defmodule FreedomAccountWeb.LoanLive.IndexTest do
       |> start_session(conn: conn)
       |> visit(~p"/loans")
       |> click(by_role(:link, name: "Activate/Deactivate"))
-      |> expect(Expect.url(~p"/loans/activate"))
+      |> expect(Cerberus.Page.to_have_url(~p"/loans/activate"))
       |> click(by_role(:link, name: "Cancel"))
       |> expect(active_tab() |> by_css() |> filter(has_text: html_text("Loans")) |> visible())
     end

@@ -41,7 +41,7 @@ defmodule FreedomAccountWeb.FundLive.ShowTest do
       |> start_session(conn: conn)
       |> visit(~p"/funds/#{fund}")
       |> click(by_role(:link, name: "Edit Details"))
-      |> expect(Expect.url(~r{/funds/#{fund.id}/edit(?:\?.*)?$}))
+      |> expect(Cerberus.Page.to_have_url(~r{/funds/#{fund.id}/edit(?:\?.*)?$}))
       |> click(by_role(:link, name: "Cancel"))
       |> expect(heading() |> by_css() |> filter(has_text: html_text(fund)) |> visible())
     end
@@ -51,7 +51,7 @@ defmodule FreedomAccountWeb.FundLive.ShowTest do
       |> start_session(conn: conn)
       |> visit(~p"/funds/#{fund}")
       |> click(by_role(:link, name: "Deposit"))
-      |> expect(Expect.url(~p"/funds/#{fund}/deposits/new"))
+      |> expect(Cerberus.Page.to_have_url(~p"/funds/#{fund}/deposits/new"))
       |> click(by_role(:link, name: "Cancel"))
       |> expect(heading() |> by_css() |> filter(has_text: html_text(fund)) |> visible())
     end
@@ -64,7 +64,7 @@ defmodule FreedomAccountWeb.FundLive.ShowTest do
       |> visit(~p"/funds/#{fund}")
       |> click(by_role(:link, name: "Withdraw"))
       |> expect(count(by_css(flash(:error)), 0))
-      |> expect(Expect.url(~p"/funds/#{fund}/withdrawals/new"))
+      |> expect(Cerberus.Page.to_have_url(~p"/funds/#{fund}/withdrawals/new"))
       |> click(by_role(:link, name: "Cancel"))
       |> expect(heading() |> by_css() |> filter(has_text: html_text(fund)) |> visible())
     end

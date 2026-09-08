@@ -78,7 +78,7 @@ defmodule FreedomAccountWeb.LoanTransactionListTest do
       |> start_session(conn: conn)
       |> visit(~p"/loans/#{loan}")
       |> click("#txn-#{transaction.id} td" |> by_css() |> filter(has_text: html_text(transaction.memo)))
-      |> expect(Expect.url(~p"/loans/#{loan}/transactions/#{transaction}/edit"))
+      |> expect(Cerberus.Page.to_have_url(~p"/loans/#{loan}/transactions/#{transaction}/edit"))
       |> click(by_role(:link, name: "Cancel"))
       |> expect(heading() |> by_css() |> filter(has_text: html_text(loan)) |> visible())
     end
