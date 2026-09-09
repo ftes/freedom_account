@@ -18,11 +18,11 @@ defmodule FreedomAccountWeb.LoanLive.IndexTest do
       :phoenix
       |> start_session(conn: conn)
       |> visit(~p"/loans")
-      |> expect(page_title_contains("Loans"))
-      |> expect(active_tab() |> by_css() |> filter(has_text: html_text("Loans")) |> visible())
-      |> expect(loan |> loan_icon() |> by_css() |> filter(has_text: html_text(loan.icon)) |> visible())
-      |> expect(loan |> loan_name() |> by_css() |> filter(has_text: html_text(loan.name)) |> visible())
-      |> expect(
+      |> assert(page_title_contains("Loans"))
+      |> assert(active_tab() |> by_css() |> filter(has_text: html_text("Loans")) |> visible())
+      |> assert(loan |> loan_icon() |> by_css() |> filter(has_text: html_text(loan.icon)) |> visible())
+      |> assert(loan |> loan_name() |> by_css() |> filter(has_text: html_text(loan.name)) |> visible())
+      |> assert(
         loan
         |> loan_balance()
         |> by_css()
@@ -35,8 +35,8 @@ defmodule FreedomAccountWeb.LoanLive.IndexTest do
       :phoenix
       |> start_session(conn: conn)
       |> visit(~p"/loans")
-      |> expect(active_tab() |> by_css() |> filter(has_text: html_text("Loans")) |> visible())
-      |> expect(
+      |> assert(active_tab() |> by_css() |> filter(has_text: html_text("Loans")) |> visible())
+      |> assert(
         "#no-loans"
         |> by_css()
         |> filter(has_text: html_text("This account has no active loans. Use the Add Loan button to add one."))
@@ -51,7 +51,7 @@ defmodule FreedomAccountWeb.LoanLive.IndexTest do
       :phoenix
       |> start_session(conn: conn)
       |> visit(~p"/loans")
-      |> expect(
+      |> assert(
         active_tab()
         |> by_css()
         |> filter(has_text: html_text(MoneyUtils.format(loan.current_balance)))
@@ -64,9 +64,9 @@ defmodule FreedomAccountWeb.LoanLive.IndexTest do
       |> start_session(conn: conn)
       |> visit(~p"/loans")
       |> click(by_role(:link, name: "Add Loan"))
-      |> expect(Fluffy.Page.to_have_url(~p"/loans/new"))
+      |> assert(page_url(~p"/loans/new"))
       |> click(by_role(:link, name: "Cancel"))
-      |> expect(active_tab() |> by_css() |> filter(has_text: html_text("Loans")) |> visible())
+      |> assert(active_tab() |> by_css() |> filter(has_text: html_text("Loans")) |> visible())
     end
 
     test "allows editing a loan in listing", %{account: account, conn: conn} do
@@ -76,9 +76,9 @@ defmodule FreedomAccountWeb.LoanLive.IndexTest do
       |> start_session(conn: conn)
       |> visit(~p"/loans")
       |> click("#loans-#{loan.id}" |> action_link() |> by_css() |> filter(has_text: html_text("Edit")))
-      |> expect(Fluffy.Page.to_have_url(~p"/loans/#{loan}/edit"))
+      |> assert(page_url(~p"/loans/#{loan}/edit"))
       |> click(by_role(:link, name: "Cancel"))
-      |> expect(active_tab() |> by_css() |> filter(has_text: html_text("Loans")) |> visible())
+      |> assert(active_tab() |> by_css() |> filter(has_text: html_text("Loans")) |> visible())
     end
 
     test "deletes loan in listing", %{account: account, conn: conn} do
@@ -88,7 +88,7 @@ defmodule FreedomAccountWeb.LoanLive.IndexTest do
       |> start_session(conn: conn)
       |> visit(~p"/loans")
       |> click("#loans-#{loan.id}" |> action_link() |> by_css() |> filter(has_text: html_text("Delete")))
-      |> expect(count(by_css("#loans-#{loan.id}"), 0))
+      |> assert(count(by_css("#loans-#{loan.id}"), 0))
     end
 
     test "allows activating/deactivating loans from listing", %{account: account, conn: conn} do
@@ -98,9 +98,9 @@ defmodule FreedomAccountWeb.LoanLive.IndexTest do
       |> start_session(conn: conn)
       |> visit(~p"/loans")
       |> click(by_role(:link, name: "Activate/Deactivate"))
-      |> expect(Fluffy.Page.to_have_url(~p"/loans/activate"))
+      |> assert(page_url(~p"/loans/activate"))
       |> click(by_role(:link, name: "Cancel"))
-      |> expect(active_tab() |> by_css() |> filter(has_text: html_text("Loans")) |> visible())
+      |> assert(active_tab() |> by_css() |> filter(has_text: html_text("Loans")) |> visible())
     end
   end
 end

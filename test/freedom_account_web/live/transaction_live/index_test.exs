@@ -13,7 +13,7 @@ defmodule FreedomAccountWeb.TransactionLive.IndexTest do
       :phoenix
       |> start_session(conn: conn)
       |> visit(~p"/transactions")
-      |> expect(visible(by_css("#no-transactions")))
+      |> assert(visible(by_css("#no-transactions")))
     end
 
     test "displays transactions", %{conn: conn, account: account, fund: fund, loan: loan} do
@@ -28,33 +28,33 @@ defmodule FreedomAccountWeb.TransactionLive.IndexTest do
       :phoenix
       |> start_session(conn: conn)
       |> visit(~p"/transactions")
-      |> expect(table_cell() |> by_css() |> filter(has_text: html_text("#{deposit.date}")) |> visible())
-      |> expect(table_cell() |> by_css() |> filter(has_text: html_text(deposit.memo)) |> visible())
-      |> expect(
+      |> assert(table_cell() |> by_css() |> filter(has_text: html_text("#{deposit.date}")) |> visible())
+      |> assert(table_cell() |> by_css() |> filter(has_text: html_text(deposit.memo)) |> visible())
+      |> assert(
         "in"
         |> role()
         |> by_css()
         |> filter(has_text: html_text(MoneyUtils.format(deposit_line_item.amount)))
         |> visible()
       )
-      |> expect(table_cell() |> by_css() |> filter(has_text: html_text("#{withdrawal.date}")) |> visible())
-      |> expect(table_cell() |> by_css() |> filter(has_text: html_text(withdrawal.memo)) |> visible())
-      |> expect(table_cell() |> by_css() |> filter(has_text: html_text(fund)) |> count(2))
-      |> expect(
+      |> assert(table_cell() |> by_css() |> filter(has_text: html_text("#{withdrawal.date}")) |> visible())
+      |> assert(table_cell() |> by_css() |> filter(has_text: html_text(withdrawal.memo)) |> visible())
+      |> assert(table_cell() |> by_css() |> filter(has_text: html_text(fund)) |> count(2))
+      |> assert(
         "out"
         |> role()
         |> by_css()
         |> filter(has_text: html_text(MoneyUtils.format(withdrawal_line_item.amount)))
         |> visible()
       )
-      |> expect(table_cell() |> by_css() |> filter(has_text: html_text("#{lend.date}")) |> visible())
-      |> expect(table_cell() |> by_css() |> filter(has_text: html_text(lend.memo)) |> visible())
-      |> expect("out" |> role() |> by_css() |> filter(has_text: html_text(MoneyUtils.format(lend.amount))) |> visible())
-      |> expect(table_cell() |> by_css() |> filter(has_text: html_text("#{payment.date}")) |> visible())
-      |> expect(table_cell() |> by_css() |> filter(has_text: html_text(payment.memo)) |> visible())
-      |> expect(table_cell() |> by_css() |> filter(has_text: html_text(loan)) |> count(2))
-      |> expect("in" |> role() |> by_css() |> filter(has_text: html_text(MoneyUtils.format(payment.amount))) |> visible())
-      |> expect(table_cell() |> by_css() |> filter(has_text: html_text(MoneyUtils.format(balance))) |> visible())
+      |> assert(table_cell() |> by_css() |> filter(has_text: html_text("#{lend.date}")) |> visible())
+      |> assert(table_cell() |> by_css() |> filter(has_text: html_text(lend.memo)) |> visible())
+      |> assert("out" |> role() |> by_css() |> filter(has_text: html_text(MoneyUtils.format(lend.amount))) |> visible())
+      |> assert(table_cell() |> by_css() |> filter(has_text: html_text("#{payment.date}")) |> visible())
+      |> assert(table_cell() |> by_css() |> filter(has_text: html_text(payment.memo)) |> visible())
+      |> assert(table_cell() |> by_css() |> filter(has_text: html_text(loan)) |> count(2))
+      |> assert("in" |> role() |> by_css() |> filter(has_text: html_text(MoneyUtils.format(payment.amount))) |> visible())
+      |> assert(table_cell() |> by_css() |> filter(has_text: html_text(MoneyUtils.format(balance))) |> visible())
     end
 
     test "paginates transactions", %{conn: conn, fund: fund} do
@@ -72,21 +72,21 @@ defmodule FreedomAccountWeb.TransactionLive.IndexTest do
       |> start_session(conn: conn)
       |> visit(~p"/transactions")
       |> assert_has_all_transactions(page1)
-      |> expect("button" |> disabled() |> by_css() |> filter(has_text: html_text("Previous Page")) |> visible())
-      |> expect("button" |> enabled() |> by_css() |> filter(has_text: html_text("Next Page")) |> visible())
+      |> assert("button" |> disabled() |> by_css() |> filter(has_text: html_text("Previous Page")) |> visible())
+      |> assert("button" |> enabled() |> by_css() |> filter(has_text: html_text("Next Page")) |> visible())
       |> click(by_role(:button, name: "Next Page"))
       |> assert_has_all_transactions(page2)
-      |> expect("button" |> enabled() |> by_css() |> filter(has_text: html_text("Previous Page")) |> visible())
-      |> expect("button" |> enabled() |> by_css() |> filter(has_text: html_text("Next Page")) |> visible())
+      |> assert("button" |> enabled() |> by_css() |> filter(has_text: html_text("Previous Page")) |> visible())
+      |> assert("button" |> enabled() |> by_css() |> filter(has_text: html_text("Next Page")) |> visible())
       |> click(by_role(:button, name: "Next Page"))
       |> assert_has_all_transactions(page3)
-      |> expect("button" |> enabled() |> by_css() |> filter(has_text: html_text("Previous Page")) |> visible())
-      |> expect("button" |> disabled() |> by_css() |> filter(has_text: html_text("Next Page")) |> visible())
+      |> assert("button" |> enabled() |> by_css() |> filter(has_text: html_text("Previous Page")) |> visible())
+      |> assert("button" |> disabled() |> by_css() |> filter(has_text: html_text("Next Page")) |> visible())
       |> click(by_role(:button, name: "Previous Page"))
       |> click(by_role(:button, name: "Previous Page"))
       |> assert_has_all_transactions(page1)
-      |> expect("button" |> disabled() |> by_css() |> filter(has_text: html_text("Previous Page")) |> visible())
-      |> expect("button" |> enabled() |> by_css() |> filter(has_text: html_text("Next Page")) |> visible())
+      |> assert("button" |> disabled() |> by_css() |> filter(has_text: html_text("Previous Page")) |> visible())
+      |> assert("button" |> enabled() |> by_css() |> filter(has_text: html_text("Next Page")) |> visible())
     end
 
     test "allows editing fund transaction in listing", %{conn: conn, fund: fund} do
@@ -96,9 +96,9 @@ defmodule FreedomAccountWeb.TransactionLive.IndexTest do
       |> start_session(conn: conn)
       |> visit(~p"/transactions")
       |> click("#txn-fund-#{deposit.id} td" |> by_css() |> filter(has_text: html_text(deposit.memo)))
-      |> expect(Fluffy.Page.to_have_url(~p"/transactions/#{deposit}/edit?type=fund"))
+      |> assert(page_url(~p"/transactions/#{deposit}/edit?type=fund"))
       |> click(by_role(:link, name: "Cancel"))
-      |> expect(active_tab() |> by_css() |> filter(has_text: html_text("Transactions")) |> visible())
+      |> assert(active_tab() |> by_css() |> filter(has_text: html_text("Transactions")) |> visible())
     end
 
     test "allows editing loan transaction in listing", %{conn: conn, loan: loan} do
@@ -108,9 +108,9 @@ defmodule FreedomAccountWeb.TransactionLive.IndexTest do
       |> start_session(conn: conn)
       |> visit(~p"/transactions")
       |> click("#txn-loan-#{transaction.id} td" |> by_css() |> filter(has_text: html_text(transaction.memo)))
-      |> expect(Fluffy.Page.to_have_url(~p"/transactions/#{transaction}/edit?type=loan"))
+      |> assert(page_url(~p"/transactions/#{transaction}/edit?type=loan"))
       |> click(by_role(:link, name: "Cancel"))
-      |> expect(active_tab() |> by_css() |> filter(has_text: html_text("Transactions")) |> visible())
+      |> assert(active_tab() |> by_css() |> filter(has_text: html_text("Transactions")) |> visible())
     end
 
     test "deletes fund transaction in listing", %{conn: conn, fund: fund} do
@@ -120,9 +120,9 @@ defmodule FreedomAccountWeb.TransactionLive.IndexTest do
       |> start_session(conn: conn)
       |> visit(~p"/transactions")
       |> click("#txn-fund-#{deposit.id}" |> action_link() |> by_css() |> filter(has_text: html_text("Delete")))
-      |> expect(active_tab() |> by_css() |> filter(has_text: html_text("Transactions")) |> visible())
-      |> expect(account_balance() |> by_css() |> filter(has_text: html_text("$0.00")) |> visible())
-      |> expect(count(by_css("#txn-#{deposit.id}"), 0))
+      |> assert(active_tab() |> by_css() |> filter(has_text: html_text("Transactions")) |> visible())
+      |> assert(account_balance() |> by_css() |> filter(has_text: html_text("$0.00")) |> visible())
+      |> assert(count(by_css("#txn-#{deposit.id}"), 0))
     end
 
     test "deletes loan transaction in listing", %{conn: conn, loan: loan} do
@@ -132,14 +132,14 @@ defmodule FreedomAccountWeb.TransactionLive.IndexTest do
       |> start_session(conn: conn)
       |> visit(~p"/transactions")
       |> click("#txn-loan-#{lend.id}" |> action_link() |> by_css() |> filter(has_text: html_text("Delete")))
-      |> expect(active_tab() |> by_css() |> filter(has_text: html_text("Transactions")) |> visible())
-      |> expect(account_balance() |> by_css() |> filter(has_text: html_text("$0.00")) |> visible())
-      |> expect(count(by_css("#txn-#{lend.id}"), 0))
+      |> assert(active_tab() |> by_css() |> filter(has_text: html_text("Transactions")) |> visible())
+      |> assert(account_balance() |> by_css() |> filter(has_text: html_text("$0.00")) |> visible())
+      |> assert(count(by_css("#txn-#{lend.id}"), 0))
     end
 
     defp assert_has_all_transactions(session, transactions) do
       Enum.reduce(transactions, session, fn txn, session ->
-        expect(session, table_cell() |> by_css() |> filter(has_text: html_text("#{txn.date}")) |> visible())
+        assert(session, table_cell() |> by_css() |> filter(has_text: html_text("#{txn.date}")) |> visible())
       end)
     end
   end

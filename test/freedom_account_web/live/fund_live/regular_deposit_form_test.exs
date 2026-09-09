@@ -18,30 +18,30 @@ defmodule FreedomAccountWeb.FundLive.RegularDepositFormTest do
       :phoenix
       |> start_session(conn: conn)
       |> visit(~p"/funds/regular_deposit")
-      |> expect(page_title_contains("Regular Deposit"))
-      |> expect(heading() |> by_css() |> filter(has_text: html_text("Regular Deposit")) |> visible())
-      |> expect(visible(by_css(field_value("#inputs_date", "#{LocalTime.today()}"))))
+      |> assert(page_title_contains("Regular Deposit"))
+      |> assert(heading() |> by_css() |> filter(has_text: html_text("Regular Deposit")) |> visible())
+      |> assert(visible(by_css(field_value("#inputs_date", "#{LocalTime.today()}"))))
       |> fill(by_label("Date", exact: true), to_string(""))
-      |> expect("#inputs_date" |> field_error() |> by_css() |> filter(has_text: html_text("can't be blank")) |> visible())
+      |> assert("#inputs_date" |> field_error() |> by_css() |> filter(has_text: html_text("can't be blank")) |> visible())
       |> fill(by_label("Date", exact: true), to_string(Factory.date()))
       |> click(by_role(:button, name: "Make Deposit"))
-      |> expect(:info |> flash() |> by_css() |> filter(has_text: html_text("Regular deposit successful")) |> visible())
-      |> expect(active_tab() |> by_css() |> filter(has_text: html_text("Funds")) |> visible())
-      |> expect(
+      |> assert(:info |> flash() |> by_css() |> filter(has_text: html_text("Regular deposit successful")) |> visible())
+      |> assert(active_tab() |> by_css() |> filter(has_text: html_text("Funds")) |> visible())
+      |> assert(
         fund1
         |> fund_balance()
         |> by_css()
         |> filter(has_text: html_text(MoneyUtils.format(balance1)))
         |> visible()
       )
-      |> expect(
+      |> assert(
         fund2
         |> fund_balance()
         |> by_css()
         |> filter(has_text: html_text(MoneyUtils.format(balance2)))
         |> visible()
       )
-      |> expect(
+      |> assert(
         fund3
         |> fund_balance()
         |> by_css()
@@ -58,22 +58,22 @@ defmodule FreedomAccountWeb.FundLive.RegularDepositFormTest do
       |> visit(~p"/funds/regular_deposit")
       |> fill(by_label("Date", exact: true), to_string(Factory.date()))
       |> click(by_role(:link, name: "Cancel"))
-      |> expect(active_tab() |> by_css() |> filter(has_text: html_text("Funds")) |> visible())
-      |> expect(
+      |> assert(active_tab() |> by_css() |> filter(has_text: html_text("Funds")) |> visible())
+      |> assert(
         fund1
         |> fund_balance()
         |> by_css()
         |> filter(has_text: html_text(MoneyUtils.format(fund1.current_balance)))
         |> visible()
       )
-      |> expect(
+      |> assert(
         fund2
         |> fund_balance()
         |> by_css()
         |> filter(has_text: html_text(MoneyUtils.format(fund2.current_balance)))
         |> visible()
       )
-      |> expect(
+      |> assert(
         fund3
         |> fund_balance()
         |> by_css()

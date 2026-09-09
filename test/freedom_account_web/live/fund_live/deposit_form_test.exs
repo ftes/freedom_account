@@ -19,30 +19,30 @@ defmodule FreedomAccountWeb.FundLive.DepositFormTest do
       :phoenix
       |> start_session(conn: conn)
       |> visit(~p"/funds/#{fund}/deposits/new")
-      |> expect(page_title_contains("Deposit"))
-      |> expect(heading() |> by_css() |> filter(has_text: html_text("Deposit")) |> visible())
-      |> expect("label" |> by_css() |> filter(has_text: html_text(fund)) |> visible())
-      |> expect(count(by_css("#transaction-total"), 0))
+      |> assert(page_title_contains("Deposit"))
+      |> assert(heading() |> by_css() |> filter(has_text: html_text("Deposit")) |> visible())
+      |> assert("label" |> by_css() |> filter(has_text: html_text(fund)) |> visible())
+      |> assert(count(by_css("#transaction-total"), 0))
       |> fill(by_label("Date", exact: true), to_string(date))
       |> fill(by_label("Memo", exact: true), to_string(memo))
       |> click(by_role(:button, name: "Make Deposit"))
-      |> expect(count(by_css("#line-items-error"), 0))
+      |> assert(count(by_css("#line-items-error"), 0))
       |> fill(by_label("Amount 0", exact: true), to_string(amount))
       |> click(by_role(:button, name: "Make Deposit"))
-      |> expect(:info |> flash() |> by_css() |> filter(has_text: html_text("Deposit successful")) |> visible())
-      |> expect(heading() |> by_css() |> filter(has_text: html_text(fund)) |> visible())
-      |> expect(heading() |> by_css() |> filter(has_text: html_text(MoneyUtils.format(amount))) |> visible())
-      |> expect(heading() |> by_css() |> filter(has_text: html_text(MoneyUtils.format(account_balance))) |> visible())
-      |> expect(
+      |> assert(:info |> flash() |> by_css() |> filter(has_text: html_text("Deposit successful")) |> visible())
+      |> assert(heading() |> by_css() |> filter(has_text: html_text(fund)) |> visible())
+      |> assert(heading() |> by_css() |> filter(has_text: html_text(MoneyUtils.format(amount))) |> visible())
+      |> assert(heading() |> by_css() |> filter(has_text: html_text(MoneyUtils.format(account_balance))) |> visible())
+      |> assert(
         fund
         |> sidebar_fund_balance()
         |> by_css()
         |> filter(has_text: html_text(MoneyUtils.format(amount)))
         |> visible()
       )
-      |> expect(table_cell() |> by_css() |> filter(has_text: html_text("#{date}")) |> visible())
-      |> expect(table_cell() |> by_css() |> filter(has_text: html_text(memo)) |> visible())
-      |> expect("deposit" |> role() |> by_css() |> filter(has_text: html_text(MoneyUtils.format(amount))) |> visible())
+      |> assert(table_cell() |> by_css() |> filter(has_text: html_text("#{date}")) |> visible())
+      |> assert(table_cell() |> by_css() |> filter(has_text: html_text(memo)) |> visible())
+      |> assert("deposit" |> role() |> by_css() |> filter(has_text: html_text(MoneyUtils.format(amount))) |> visible())
     end
 
     test "does not make deposit on cancel", %{account: account, conn: conn, fund: fund} do
@@ -58,14 +58,14 @@ defmodule FreedomAccountWeb.FundLive.DepositFormTest do
       |> fill(by_label("Memo", exact: true), to_string(memo))
       |> fill(by_label("Amount 0", exact: true), to_string(amount))
       |> click(by_role(:link, name: "Cancel"))
-      |> expect(heading() |> by_css() |> filter(has_text: html_text(fund)) |> visible())
-      |> expect(
+      |> assert(heading() |> by_css() |> filter(has_text: html_text(fund)) |> visible())
+      |> assert(
         heading()
         |> by_css()
         |> filter(has_text: :usd |> Money.zero() |> MoneyUtils.format() |> html_text())
         |> visible()
       )
-      |> expect(
+      |> assert(
         heading()
         |> by_css()
         |> filter(has_text: html_text(MoneyUtils.format(other_fund.current_balance)))

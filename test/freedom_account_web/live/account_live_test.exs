@@ -12,18 +12,18 @@ defmodule FreedomAccountWeb.AccountLiveTest do
       :phoenix
       |> start_session(conn: conn)
       |> visit(~p"/account/edit")
-      |> expect(page_title_contains("Edit Account Settings"))
-      |> expect(heading() |> by_css() |> filter(has_text: html_text("Edit Account Settings")) |> visible())
+      |> assert(page_title_contains("Edit Account Settings"))
+      |> assert(heading() |> by_css() |> filter(has_text: html_text("Edit Account Settings")) |> visible())
       |> fill(by_label("Name", exact: true), to_string(""))
       |> fill(by_label("Deposits / year", exact: true), to_string(""))
-      |> expect(
+      |> assert(
         "#account_name"
         |> field_error()
         |> by_css()
         |> filter(has_text: html_text("can't be blank"))
         |> visible()
       )
-      |> expect(
+      |> assert(
         "#account_deposits_per_year"
         |> field_error()
         |> by_css()
@@ -33,8 +33,8 @@ defmodule FreedomAccountWeb.AccountLiveTest do
       |> fill(by_label("Name", exact: true), to_string(name))
       |> fill(by_label("Deposits / year", exact: true), to_string(deposits))
       |> click(by_role(:button, name: "Save Account"))
-      |> expect(:info |> flash() |> by_css() |> filter(has_text: html_text("Account updated successfully")) |> visible())
-      |> expect(heading() |> by_css() |> filter(has_text: html_text(name)) |> visible())
+      |> assert(:info |> flash() |> by_css() |> filter(has_text: html_text("Account updated successfully")) |> visible())
+      |> assert(heading() |> by_css() |> filter(has_text: html_text(name)) |> visible())
     end
 
     test "selects default fund", %{account: account, conn: conn} do
@@ -47,9 +47,9 @@ defmodule FreedomAccountWeb.AccountLiveTest do
       |> visit(~p"/account/edit")
       |> select_option(by_css("#default-fund"), %{label: default_fund_label})
       |> click(by_role(:button, name: "Save Account"))
-      |> expect(:info |> flash() |> by_css() |> filter(has_text: html_text("Account updated successfully")) |> visible())
+      |> assert(:info |> flash() |> by_css() |> filter(has_text: html_text("Account updated successfully")) |> visible())
       |> visit(~p"/account/edit")
-      |> expect(
+      |> assert(
         "#default-fund"
         |> selected_option()
         |> by_css()
@@ -67,7 +67,7 @@ defmodule FreedomAccountWeb.AccountLiveTest do
       |> fill(by_label("Name", exact: true), to_string(name))
       |> fill(by_label("Deposits / year", exact: true), to_string(deposits))
       |> click(by_role(:link, name: "Cancel"))
-      |> expect(heading() |> by_css() |> filter(has_text: html_text(account.name)) |> visible())
+      |> assert(heading() |> by_css() |> filter(has_text: html_text(account.name)) |> visible())
     end
 
     test "returns to fund list by default on save", %{conn: conn} do
@@ -75,7 +75,7 @@ defmodule FreedomAccountWeb.AccountLiveTest do
       |> start_session(conn: conn)
       |> visit(~p"/account/edit")
       |> click(by_role(:button, name: "Save Account"))
-      |> expect(active_tab() |> by_css() |> filter(has_text: html_text("Funds")) |> visible())
+      |> assert(active_tab() |> by_css() |> filter(has_text: html_text("Funds")) |> visible())
     end
 
     test "returns to fund list by default on cancel", %{conn: conn} do
@@ -83,7 +83,7 @@ defmodule FreedomAccountWeb.AccountLiveTest do
       |> start_session(conn: conn)
       |> visit(~p"/account/edit")
       |> click(by_role(:link, name: "Cancel"))
-      |> expect(active_tab() |> by_css() |> filter(has_text: html_text("Funds")) |> visible())
+      |> assert(active_tab() |> by_css() |> filter(has_text: html_text("Funds")) |> visible())
     end
 
     for {return_to, tab_title} <- [
@@ -101,7 +101,7 @@ defmodule FreedomAccountWeb.AccountLiveTest do
         |> start_session(conn: conn)
         |> visit(~p"/account/edit?#{params}")
         |> click(by_role(:button, name: "Save Account"))
-        |> expect(active_tab() |> by_css() |> filter(has_text: html_text(tab_title)) |> visible())
+        |> assert(active_tab() |> by_css() |> filter(has_text: html_text(tab_title)) |> visible())
       end
 
       test "returns to #{return_to} list when specified on cancel", %{conn: conn} do
@@ -114,7 +114,7 @@ defmodule FreedomAccountWeb.AccountLiveTest do
         |> start_session(conn: conn)
         |> visit(~p"/account/edit?#{params}")
         |> click(by_role(:link, name: "Cancel"))
-        |> expect(active_tab() |> by_css() |> filter(has_text: html_text(tab_title)) |> visible())
+        |> assert(active_tab() |> by_css() |> filter(has_text: html_text(tab_title)) |> visible())
       end
     end
   end

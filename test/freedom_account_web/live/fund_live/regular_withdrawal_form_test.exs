@@ -24,19 +24,19 @@ defmodule FreedomAccountWeb.FundLive.RegularWithdrawalFormTest do
       :phoenix
       |> start_session(conn: conn)
       |> visit(~p"/funds/regular_withdrawal")
-      |> expect(page_title_contains("Regular Withdrawal"))
-      |> expect(heading() |> by_css() |> filter(has_text: html_text("Regular Withdrawal")) |> visible())
-      |> expect(
+      |> assert(page_title_contains("Regular Withdrawal"))
+      |> assert(heading() |> by_css() |> filter(has_text: html_text("Regular Withdrawal")) |> visible())
+      |> assert(
         "#transaction-total"
         |> by_css()
         |> filter(has_text: :usd |> Money.zero() |> MoneyUtils.format() |> html_text())
         |> visible()
       )
-      |> expect("label" |> by_css() |> filter(has_text: html_text(fund1)) |> visible())
-      |> expect("label" |> by_css() |> filter(has_text: html_text(fund2)) |> visible())
-      |> expect("label" |> by_css() |> filter(has_text: html_text(fund3)) |> visible())
+      |> assert("label" |> by_css() |> filter(has_text: html_text(fund1)) |> visible())
+      |> assert("label" |> by_css() |> filter(has_text: html_text(fund2)) |> visible())
+      |> assert("label" |> by_css() |> filter(has_text: html_text(fund3)) |> visible())
       |> fill(by_label("Date", exact: true), to_string(""))
-      |> expect(
+      |> assert(
         "#transaction_date"
         |> field_error()
         |> by_css()
@@ -46,36 +46,36 @@ defmodule FreedomAccountWeb.FundLive.RegularWithdrawalFormTest do
       |> fill(by_label("Date", exact: true), to_string(Factory.date()))
       |> fill(by_label("Memo", exact: true), to_string("Cover expenses"))
       |> click(by_role(:button, name: "Make Withdrawal"))
-      |> expect(
+      |> assert(
         "#line-items-error"
         |> by_css()
         |> filter(has_text: html_text("Requires at least one line item with a non-zero amount"))
         |> visible()
       )
       |> fill(by_label("Amount 0", exact: true), to_string("#{amount1}"))
-      |> expect("#transaction-total" |> by_css() |> filter(has_text: html_text(MoneyUtils.format(total1))) |> visible())
+      |> assert("#transaction-total" |> by_css() |> filter(has_text: html_text(MoneyUtils.format(total1))) |> visible())
       |> fill(by_label("Amount 1", exact: true), to_string("#{amount2}"))
-      |> expect("#transaction-total" |> by_css() |> filter(has_text: html_text(MoneyUtils.format(total2))) |> visible())
+      |> assert("#transaction-total" |> by_css() |> filter(has_text: html_text(MoneyUtils.format(total2))) |> visible())
       |> fill(by_label("Amount 2", exact: true), to_string("#{amount3}"))
-      |> expect("#transaction-total" |> by_css() |> filter(has_text: html_text(MoneyUtils.format(total3))) |> visible())
+      |> assert("#transaction-total" |> by_css() |> filter(has_text: html_text(MoneyUtils.format(total3))) |> visible())
       |> click(by_role(:button, name: "Make Withdrawal"))
-      |> expect(:info |> flash() |> by_css() |> filter(has_text: html_text("Withdrawal successful")) |> visible())
-      |> expect(active_tab() |> by_css() |> filter(has_text: html_text("Funds")) |> visible())
-      |> expect(
+      |> assert(:info |> flash() |> by_css() |> filter(has_text: html_text("Withdrawal successful")) |> visible())
+      |> assert(active_tab() |> by_css() |> filter(has_text: html_text("Funds")) |> visible())
+      |> assert(
         fund1
         |> fund_balance()
         |> by_css()
         |> filter(has_text: html_text(MoneyUtils.format(balance1)))
         |> visible()
       )
-      |> expect(
+      |> assert(
         fund2
         |> fund_balance()
         |> by_css()
         |> filter(has_text: html_text(MoneyUtils.format(balance2)))
         |> visible()
       )
-      |> expect(
+      |> assert(
         fund3
         |> fund_balance()
         |> by_css()
@@ -95,8 +95,8 @@ defmodule FreedomAccountWeb.FundLive.RegularWithdrawalFormTest do
       |> fill(by_label("Memo", exact: true), to_string("Cover expenses"))
       |> fill(by_label("Amount 0", exact: true), to_string("#{amount}"))
       |> click(by_role(:link, name: "Cancel"))
-      |> expect(active_tab() |> by_css() |> filter(has_text: html_text("Funds")) |> visible())
-      |> expect(
+      |> assert(active_tab() |> by_css() |> filter(has_text: html_text("Funds")) |> visible())
+      |> assert(
         fund1
         |> fund_balance()
         |> by_css()

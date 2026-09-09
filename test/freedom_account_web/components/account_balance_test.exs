@@ -23,7 +23,7 @@ defmodule FreedomAccountWeb.AccountBalanceTest do
         :phoenix
         |> start_session(conn: conn)
         |> visit(path)
-        |> expect(page |> balance() |> by_css() |> filter(has_text: html_text("#{total_balance}")) |> visible())
+        |> assert(page |> balance() |> by_css() |> filter(has_text: html_text("#{total_balance}")) |> visible())
       end
 
       test "updates balance when transaction is created", %{account: account, conn: conn, funds: funds} = context do
@@ -36,7 +36,7 @@ defmodule FreedomAccountWeb.AccountBalanceTest do
 
         new_balance = account |> Funds.list_active_funds() |> expected_balance()
 
-        expect(session, page |> balance() |> by_css() |> filter(has_text: html_text("#{new_balance}")) |> visible())
+        assert(session, page |> balance() |> by_css() |> filter(has_text: html_text("#{new_balance}")) |> visible())
       end
     end
   end
@@ -53,7 +53,7 @@ defmodule FreedomAccountWeb.AccountBalanceTest do
         :phoenix
         |> start_session(conn: conn)
         |> visit(path)
-        |> expect(
+        |> assert(
           page
           |> balance()
           |> by_css()
@@ -73,7 +73,7 @@ defmodule FreedomAccountWeb.AccountBalanceTest do
 
         new_balance = account |> Loans.list_active_loans() |> expected_balance()
 
-        expect(
+        assert(
           session,
           page |> balance() |> by_css() |> filter(has_text: html_text(MoneyUtils.format(new_balance))) |> visible()
         )

@@ -7,6 +7,6 @@ defmodule FreedomAccountWeb.HomeControllerTest do
     :phoenix
     |> start_session(conn: conn)
     |> visit(~p"/")
-    |> expect(page_title_contains("Funds"))
+    |> assert(page_title_contains("Funds"))
   end
 end

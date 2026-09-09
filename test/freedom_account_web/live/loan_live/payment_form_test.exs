@@ -25,31 +25,31 @@ defmodule FreedomAccountWeb.LoanLive.PaymentFormTest do
       :phoenix
       |> start_session(conn: conn)
       |> visit(~p"/loans/#{loan}/payments/new")
-      |> expect(page_title_contains("Payment"))
-      |> expect(heading() |> by_css() |> filter(has_text: html_text("Payment")) |> visible())
+      |> assert(page_title_contains("Payment"))
+      |> assert(heading() |> by_css() |> filter(has_text: html_text("Payment")) |> visible())
       |> fill(by_label("Date", exact: true), to_string(date))
       |> fill(by_label("Memo", exact: true), to_string(memo))
       |> fill(by_label("Amount", exact: true), to_string(amount))
       |> click(by_role(:button, name: "Receive Payment"))
-      |> expect(:info |> flash() |> by_css() |> filter(has_text: html_text("Payment successful")) |> visible())
-      |> expect(heading() |> by_css() |> filter(has_text: html_text(loan)) |> visible())
-      |> expect(heading() |> by_css() |> filter(has_text: html_text(MoneyUtils.format(balance))) |> visible())
-      |> expect(
+      |> assert(:info |> flash() |> by_css() |> filter(has_text: html_text("Payment successful")) |> visible())
+      |> assert(heading() |> by_css() |> filter(has_text: html_text(loan)) |> visible())
+      |> assert(heading() |> by_css() |> filter(has_text: html_text(MoneyUtils.format(balance))) |> visible())
+      |> assert(
         account_balance()
         |> by_css()
         |> filter(has_text: html_text(MoneyUtils.format(account_balance)))
         |> visible()
       )
-      |> expect(
+      |> assert(
         loan
         |> sidebar_loan_balance()
         |> by_css()
         |> filter(has_text: html_text(MoneyUtils.format(balance)))
         |> visible()
       )
-      |> expect(table_cell() |> by_css() |> filter(has_text: html_text("#{date}")) |> visible())
-      |> expect(table_cell() |> by_css() |> filter(has_text: html_text(memo)) |> visible())
-      |> expect("payment" |> role() |> by_css() |> filter(has_text: html_text(MoneyUtils.format(amount))) |> visible())
+      |> assert(table_cell() |> by_css() |> filter(has_text: html_text("#{date}")) |> visible())
+      |> assert(table_cell() |> by_css() |> filter(has_text: html_text(memo)) |> visible())
+      |> assert("payment" |> role() |> by_css() |> filter(has_text: html_text(MoneyUtils.format(amount))) |> visible())
     end
 
     test "does not receive a payment on cancel", %{account: account, conn: conn, loan: loan} do
@@ -70,15 +70,15 @@ defmodule FreedomAccountWeb.LoanLive.PaymentFormTest do
       |> fill(by_label("Memo", exact: true), to_string(memo))
       |> fill(by_label("Amount", exact: true), to_string(amount))
       |> click(by_role(:link, name: "Cancel"))
-      |> expect(heading() |> by_css() |> filter(has_text: html_text(loan)) |> visible())
-      |> expect(heading() |> by_css() |> filter(has_text: html_text(MoneyUtils.format(balance))) |> visible())
-      |> expect(
+      |> assert(heading() |> by_css() |> filter(has_text: html_text(loan)) |> visible())
+      |> assert(heading() |> by_css() |> filter(has_text: html_text(MoneyUtils.format(balance))) |> visible())
+      |> assert(
         account_balance()
         |> by_css()
         |> filter(has_text: html_text(MoneyUtils.format(account_balance)))
         |> visible()
       )
-      |> expect(
+      |> assert(
         loan
         |> sidebar_loan_balance()
         |> by_css()

@@ -12,8 +12,8 @@ defmodule FreedomAccountWeb.AccountBarTest do
       :phoenix
       |> start_session(conn: conn)
       |> visit(~p"/")
-      |> expect(title() |> by_css() |> filter(has_text: html_text("Freedom Account")) |> visible())
-      |> expect(heading() |> by_css() |> filter(has_text: html_text(account.name)) |> visible())
+      |> assert(title() |> by_css() |> filter(has_text: html_text("Freedom Account")) |> visible())
+      |> assert(heading() |> by_css() |> filter(has_text: html_text(account.name)) |> visible())
     end
 
     test "updates account from fund list view", %{conn: conn} do
@@ -21,10 +21,10 @@ defmodule FreedomAccountWeb.AccountBarTest do
       |> start_session(conn: conn)
       |> visit(~p"/funds")
       |> click(by_role(:link, name: "Settings"))
-      |> expect(Fluffy.Page.to_have_url(~r{/account/edit(?:\?.*)?$}))
-      |> expect(heading() |> by_css() |> filter(has_text: html_text("Edit Account Settings")) |> visible())
+      |> assert(page_url(~r{/account/edit(?:\?.*)?$}))
+      |> assert(heading() |> by_css() |> filter(has_text: html_text("Edit Account Settings")) |> visible())
       |> click(by_role(:button, name: "Save Account"))
-      |> expect(page_title_contains("Funds"))
+      |> assert(page_title_contains("Funds"))
     end
 
     test "updates account from loan list view", %{conn: conn} do
@@ -32,10 +32,10 @@ defmodule FreedomAccountWeb.AccountBarTest do
       |> start_session(conn: conn)
       |> visit(~p"/loans")
       |> click(by_role(:link, name: "Settings"))
-      |> expect(Fluffy.Page.to_have_url(~r{/account/edit(?:\?.*)?$}))
-      |> expect(heading() |> by_css() |> filter(has_text: html_text("Edit Account Settings")) |> visible())
+      |> assert(page_url(~r{/account/edit(?:\?.*)?$}))
+      |> assert(heading() |> by_css() |> filter(has_text: html_text("Edit Account Settings")) |> visible())
       |> click(by_role(:button, name: "Save Account"))
-      |> expect(page_title_contains("Loans"))
+      |> assert(page_title_contains("Loans"))
     end
 
     test "updates account from transaction list view", %{conn: conn} do
@@ -43,10 +43,10 @@ defmodule FreedomAccountWeb.AccountBarTest do
       |> start_session(conn: conn)
       |> visit(~p"/transactions")
       |> click(by_role(:link, name: "Settings"))
-      |> expect(Fluffy.Page.to_have_url(~r{/account/edit(?:\?.*)?$}))
-      |> expect(heading() |> by_css() |> filter(has_text: html_text("Edit Account Settings")) |> visible())
+      |> assert(page_url(~r{/account/edit(?:\?.*)?$}))
+      |> assert(heading() |> by_css() |> filter(has_text: html_text("Edit Account Settings")) |> visible())
       |> click(by_role(:button, name: "Save Account"))
-      |> expect(page_title_contains("Transactions"))
+      |> assert(page_title_contains("Transactions"))
     end
   end
 end

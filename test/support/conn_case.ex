@@ -17,6 +17,8 @@ defmodule FreedomAccountWeb.ConnCase do
 
   use ExUnit.CaseTemplate
 
+  import Fluffy.Assert, only: [page_title: 1]
+
   alias Phoenix.ConnTest
   alias Phoenix.HTML.Safe
 
@@ -24,17 +26,15 @@ defmodule FreedomAccountWeb.ConnCase do
     quote do
       use FreedomAccount.DataCase, unquote(opts)
       use FreedomAccountWeb, :verified_routes
+      use Fluffy.Assert
 
       import Fluffy
-      import Fluffy.Expect, except: [disabled: 1, enabled: 1, url: 1]
+      import Fluffy.Assert, except: [disabled: 1, enabled: 1]
       import Fluffy.Locator
       import FreedomAccountWeb.ElementSelectors
       import Phoenix.ConnTest
       import Plug.Conn
       import unquote(__MODULE__)
-
-      alias Fluffy.Expect
-      alias Fluffy.Page
 
       @endpoint FreedomAccountWeb.Endpoint
       @moduletag :fluffy
@@ -67,6 +67,6 @@ defmodule FreedomAccountWeb.ConnCase do
     |> html_text()
     |> Regex.escape()
     |> Regex.compile!()
-    |> Fluffy.Page.to_have_title()
+    |> page_title()
   end
 end
